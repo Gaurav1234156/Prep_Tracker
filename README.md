@@ -189,3 +189,5 @@ middleware.ts                 # Refreshes session, guards /admin/*
 ## Roadmap
 
 Steps 1 / 2 / 3 are done. Step 4 builds the student-facing infographic page (the visual showpiece). Future work: public catalog & company pages, analytics dashboards, taxonomy management UI, Google OAuth, Cloudflare CDN, Sentry/PostHog/Resend integrations.
+#   p r e p _ t r a c k  
+ 
