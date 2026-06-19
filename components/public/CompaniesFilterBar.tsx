@@ -49,6 +49,8 @@ export function CompaniesFilterBar({
   const [cgpaMin, setCgpaMin] = useState<number>(
     Number.isFinite(initialCgpa) && initialCgpa >= 6 ? initialCgpa : 6,
   );
+  const [ctcMin, setCtcMin] = useState<string>(searchParams.get("ctcMin") || "");
+  const [ctcMax, setCtcMax] = useState<string>(searchParams.get("ctcMax") || "");
 
   const sync = (next: {
     q?: string;
@@ -56,6 +58,8 @@ export function CompaniesFilterBar({
     years?: number[];
     branches?: string[];
     cgpaMin?: number | null;
+    ctcMin?: string | null;
+    ctcMax?: string | null;
   }) => {
     const params = new URLSearchParams();
     const q = next.q ?? search;
@@ -63,6 +67,8 @@ export function CompaniesFilterBar({
     const yrs = next.years ?? selectedYears;
     const brs = next.branches ?? selectedBranches;
     const cMin = next.cgpaMin === undefined ? cgpaMin : next.cgpaMin;
+    const ctMin = next.ctcMin === undefined ? ctcMin : next.ctcMin;
+    const ctMax = next.ctcMax === undefined ? ctcMax : next.ctcMax;
 
     if (q.trim()) params.set("q", q.trim());
     if (levels.length > 0) params.set("roleLevel", levels.join(","));
@@ -71,6 +77,8 @@ export function CompaniesFilterBar({
     if (showProfileFilter && cMin != null && cMin > 6) {
       params.set("cgpaMin", String(cMin));
     }
+    if (ctMin && ctMin.trim()) params.set("ctcMin", ctMin.trim());
+    if (ctMax && ctMax.trim()) params.set("ctcMax", ctMax.trim());
 
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`);
@@ -88,6 +96,19 @@ export function CompaniesFilterBar({
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
+
+  // Debounced CTC sync
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const currentMin = searchParams.get("ctcMin") || "";
+      const currentMax = searchParams.get("ctcMax") || "";
+      if (ctcMin !== currentMin || ctcMax !== currentMax) {
+        sync({ ctcMin, ctcMax });
+      }
+    }, 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctcMin, ctcMax]);
 
   const toggleLevel = (id: string) => {
     const next = selectedLevels.includes(id)
@@ -121,6 +142,8 @@ export function CompaniesFilterBar({
     setSelectedYears([]);
     setSelectedBranches([]);
     setCgpaMin(6);
+    setCtcMin("");
+    setCtcMax("");
     startTransition(() => {
       router.push(pathname);
     });
@@ -131,7 +154,9 @@ export function CompaniesFilterBar({
     selectedLevels.length > 0 ||
     selectedYears.length > 0 ||
     selectedBranches.length > 0 ||
-    (showProfileFilter && cgpaMin > 6);
+    (showProfileFilter && cgpaMin > 6) ||
+    ctcMin !== "" ||
+    ctcMax !== "";
 
   return (
     <div className="bg-card border border-border rounded-lg p-5 md:p-6 space-y-6">
@@ -153,7 +178,7 @@ export function CompaniesFilterBar({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1.5fr_2fr_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_0.8fr_1fr] gap-6">
         <FilterColumn label="Company name">
           <div className="relative">
             <Search className="size-4 absolute inset-y-0 left-3 my-auto text-muted-foreground/60" />
@@ -194,6 +219,28 @@ export function CompaniesFilterBar({
               </Chip>
             ))}
           </ChipRow>
+        </FilterColumn>
+
+        <FilterColumn label="CTC Range (LPA)">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number"
+              min={0}
+              placeholder="Min"
+              value={ctcMin}
+              onChange={(e) => setCtcMin(e.target.value)}
+              className="w-full text-sm px-2.5 h-9 rounded-md bg-background border border-input text-foreground focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
+            />
+            <span className="text-muted-foreground text-xs font-medium">to</span>
+            <input
+              type="number"
+              min={0}
+              placeholder="Max"
+              value={ctcMax}
+              onChange={(e) => setCtcMax(e.target.value)}
+              className="w-full text-sm px-2.5 h-9 rounded-md bg-background border border-input text-foreground focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
+            />
+          </div>
         </FilterColumn>
       </div>
 

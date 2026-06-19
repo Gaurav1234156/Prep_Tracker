@@ -201,6 +201,11 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 {uniqueLevels.length}{" "}
                 {uniqueLevels.length === 1 ? "level" : "levels"}
               </span>
+              {company.ctc != null ? (
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/20 px-3 py-1.5 text-emerald-200 ring-1 ring-emerald-500/30 font-semibold">
+                  💰 CTC: {company.ctc} LPA
+                </span>
+              ) : null}
             </div>
           </div>
           {company.description ? (

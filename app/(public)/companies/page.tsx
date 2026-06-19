@@ -27,6 +27,8 @@ interface CompaniesPageProps {
     branch?: string;
     cgpaMin?: string;
     cgpaMax?: string;
+    ctcMin?: string;
+    ctcMax?: string;
   }>;
 }
 
@@ -82,6 +84,8 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
   const branchParam = params.branch || "";
   const cgpaMin = params.cgpaMin ? Number(params.cgpaMin) : undefined;
   const cgpaMax = params.cgpaMax ? Number(params.cgpaMax) : undefined;
+  const ctcMin = params.ctcMin ? Number(params.ctcMin) : undefined;
+  const ctcMax = params.ctcMax ? Number(params.ctcMax) : undefined;
 
   const selectedLevels = roleLevelParam.split(",").filter(Boolean);
   const selectedYears = yearParam.split(",").map(Number).filter(Boolean);
@@ -101,6 +105,8 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
     branches: selectedBranches,
     cgpaMin: Number.isFinite(cgpaMin) ? cgpaMin : undefined,
     cgpaMax: Number.isFinite(cgpaMax) ? cgpaMax : undefined,
+    ctcMin: Number.isFinite(ctcMin) ? ctcMin : undefined,
+    ctcMax: Number.isFinite(ctcMax) ? ctcMax : undefined,
     cursor: cursor || undefined,
     limit,
   });
@@ -111,6 +117,11 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
     if (q) urlParams.set("q", q);
     if (roleLevelParam) urlParams.set("roleLevel", roleLevelParam);
     if (yearParam) urlParams.set("year", yearParam);
+    if (branchParam) urlParams.set("branch", branchParam);
+    if (cgpaMin != null) urlParams.set("cgpaMin", String(cgpaMin));
+    if (cgpaMax != null) urlParams.set("cgpaMax", String(cgpaMax));
+    if (ctcMin != null) urlParams.set("ctcMin", String(ctcMin));
+    if (ctcMax != null) urlParams.set("ctcMax", String(ctcMax));
     if (newCursor) urlParams.set("cursor", newCursor);
     return `/companies?${urlParams.toString()}`;
   };

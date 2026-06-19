@@ -197,17 +197,17 @@ const SUB_TOPICS: Array<{ name: string; area: string }> = [
   { name: "Thinking Aloud", area: "Communication Skills" },
 ];
 
-const COMPANIES: Array<{ name: string; slug: string }> = [
-  { name: "Google", slug: "google" },
-  { name: "Adobe", slug: "adobe" },
-  { name: "Samsung", slug: "samsung" },
-  { name: "Microsoft", slug: "microsoft" },
-  { name: "Amazon", slug: "amazon" },
-  { name: "Meta", slug: "meta" },
-  { name: "Apple", slug: "apple" },
-  { name: "Netflix", slug: "netflix" },
-  { name: "Atlassian", slug: "atlassian" },
-  { name: "Salesforce", slug: "salesforce" },
+const COMPANIES: Array<{ name: string; slug: string; ctc?: number }> = [
+  { name: "Google", slug: "google", ctc: 35.0 },
+  { name: "Adobe", slug: "adobe", ctc: 25.0 },
+  { name: "Samsung", slug: "samsung", ctc: 18.0 },
+  { name: "Microsoft", slug: "microsoft", ctc: 30.0 },
+  { name: "Amazon", slug: "amazon", ctc: 28.0 },
+  { name: "Meta", slug: "meta", ctc: 45.0 },
+  { name: "Apple", slug: "apple", ctc: 40.0 },
+  { name: "Netflix", slug: "netflix", ctc: 50.0 },
+  { name: "Atlassian", slug: "atlassian", ctc: 32.0 },
+  { name: "Salesforce", slug: "salesforce", ctc: 26.0 },
 ];
 
 const FLAGS: Array<{ key: string; enabled: boolean; description: string }> = [
@@ -259,8 +259,8 @@ async function seedCompanies() {
   for (const c of COMPANIES) {
     await prisma.company.upsert({
       where: { slug: c.slug },
-      update: { name: c.name },
-      create: { name: c.name, slug: c.slug },
+      update: { name: c.name, ctc: c.ctc },
+      create: { name: c.name, slug: c.slug, ctc: c.ctc },
     });
   }
   return COMPANIES.length;

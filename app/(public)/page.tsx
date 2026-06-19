@@ -107,6 +107,7 @@ async function FeaturedCompaniesRowAsync() {
       interviewCount: c._count.interviews,
       roleLevelsCovered: Array.from(levelsMap.values()),
       mostRecentYear: maxYear > 0 ? maxYear : null,
+      ctc: c.ctc,
     };
   });
 

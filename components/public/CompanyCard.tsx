@@ -4,6 +4,7 @@ import { Calendar, Layout } from "lucide-react";
 import { CompanyLogo } from "@/components/common/CompanyLogo";
 import { Badge } from "@/components/ui/badge";
 import { CompanyDeleteButton } from "@/components/public/CompanyDeleteButton";
+import { CompanyCtcEditButton } from "@/components/public/CompanyCtcEditButton";
 
 interface CompanyCardProps {
   company: {
@@ -16,6 +17,7 @@ interface CompanyCardProps {
     interviewCount: number;
     roleLevelsCovered: { id: string; name: string; slug: string }[];
     mostRecentYear?: number | null;
+    ctc?: number | null;
   };
   /** When true, renders an admin-only delete control over the card. */
   canManage?: boolean;
@@ -25,11 +27,18 @@ export function CompanyCard({ company, canManage = false }: CompanyCardProps) {
   return (
     <div className="group relative h-full">
       {canManage ? (
-        <CompanyDeleteButton
-          companyId={company.id}
-          companyName={company.name}
-          interviewCount={company.interviewCount}
-        />
+        <>
+          <CompanyCtcEditButton
+            companyId={company.id}
+            companyName={company.name}
+            currentCtc={company.ctc ?? null}
+          />
+          <CompanyDeleteButton
+            companyId={company.id}
+            companyName={company.name}
+            interviewCount={company.interviewCount}
+          />
+        </>
       ) : null}
       <Link
         href={`/companies/${company.slug}`}
@@ -46,12 +55,25 @@ export function CompanyCard({ company, canManage = false }: CompanyCardProps) {
             <h4 className="text-lg font-semibold text-foreground leading-tight group-hover:text-brand transition-colors">
               {company.name}
             </h4>
-            {company.mostRecentYear ? (
-              <span className="mt-1 inline-flex items-center gap-1 text-xs text-foreground-muted">
-                <Calendar className="h-3 w-3 shrink-0 text-brand" />
-                Active: {company.mostRecentYear}
-              </span>
-            ) : null}
+            <div className="flex flex-col gap-1 mt-1">
+              {company.mostRecentYear ? (
+                <span className="inline-flex items-center gap-1 text-xs text-foreground-muted">
+                  <Calendar className="h-3 w-3 shrink-0 text-brand" />
+                  Active: {company.mostRecentYear}
+                </span>
+              ) : null}
+              {company.ctc != null ? (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                  <span className="text-brand font-bold">CTC:</span> {company.ctc} LPA
+                </span>
+              ) : (
+                canManage && (
+                  <span className="inline-flex items-center gap-1 text-xs text-foreground-muted italic">
+                    No CTC set
+                  </span>
+                )
+              )}
+            </div>
           </div>
         </div>
 

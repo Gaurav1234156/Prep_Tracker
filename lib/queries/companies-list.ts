@@ -10,6 +10,8 @@ interface GetCompaniesListFilters {
   branches?: string[]; // Branch enum values
   cgpaMin?: number;
   cgpaMax?: number;
+  ctcMin?: number;
+  ctcMax?: number;
 }
 
 export async function getCompaniesList({
@@ -21,6 +23,8 @@ export async function getCompaniesList({
   branches,
   cgpaMin,
   cgpaMax,
+  ctcMin,
+  ctcMax,
 }: GetCompaniesListFilters) {
   const whereClause: any = {};
 
@@ -29,6 +33,12 @@ export async function getCompaniesList({
       contains: q.trim(),
       mode: "insensitive",
     };
+  }
+
+  if (ctcMin != null || ctcMax != null) {
+    whereClause.ctc = {};
+    if (ctcMin != null) whereClause.ctc.gte = ctcMin;
+    if (ctcMax != null) whereClause.ctc.lte = ctcMax;
   }
 
   const interviewFilters: any = {};
@@ -109,6 +119,7 @@ export async function getCompaniesList({
       interviewCount: c._count.interviews,
       roleLevelsCovered: Array.from(levelsMap.values()),
       mostRecentYear: maxYear > 0 ? maxYear : null,
+      ctc: c.ctc,
     };
   });
 

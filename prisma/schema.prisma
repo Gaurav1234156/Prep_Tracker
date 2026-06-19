@@ -78,8 +78,11 @@ model Company {
   description String?
   createdAt   DateTime    @default(now())
   interviews  Interview[]
+  ctcJson     Json?
+  ctc         Float?
 
   @@index([slug])
+  @@index([ctc])
 }
 
 model RoleLevel {
