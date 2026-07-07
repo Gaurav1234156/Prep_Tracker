@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -23,7 +23,7 @@ const display = Inter({
   weight: ["600", "700"],
 });
 
-const mono = JetBrains_Mono({
+const mono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
