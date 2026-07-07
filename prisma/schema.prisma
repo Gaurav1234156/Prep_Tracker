@@ -68,6 +68,12 @@ enum ImportStatus {
   FAILED
 }
 
+enum SubmissionStatus {
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
 // ============ CORE ============
 
 model Company {
@@ -237,6 +243,32 @@ model User {
   interviews   Interview[]
   bookmarks    Bookmark[]
   importBatches ImportBatch[]
+  submissions  ExperienceSubmission[]
+}
+
+// ============ STUDENT-SUBMITTED EXPERIENCES ============
+
+// A candidate-submitted interview experience awaiting admin review. It is NEVER
+// public data — only an admin action (publishSubmission) creates the real
+// Interview tree. Keeps unreviewed content fully separate from the live catalog.
+model ExperienceSubmission {
+  id                   String           @id @default(cuid())
+  submittedBy          User             @relation(fields: [submittedById], references: [id])
+  submittedById        String
+  companyName          String
+  role                 String
+  year                 Int
+  payload              Json
+  status               SubmissionStatus @default(PENDING)
+  reviewNotes          String?
+  reviewedById         String?
+  reviewedAt           DateTime?
+  publishedInterviewId String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([status, createdAt])
+  @@index([submittedById])
 }
 
 model Bookmark {
