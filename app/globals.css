@@ -77,29 +77,30 @@
   /* ============ FONTS ============ */
   --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
   --font-heading: var(--font-sans), -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, "SF Mono",
-    Menlo, Consolas, monospace;
+  --font-mono: var(--font-mono), "IBM Plex Mono", "JetBrains Mono", ui-monospace,
+    SFMono-Regular, Menlo, Consolas, monospace;
 
   /* ============ TYPE SCALE ============ */
   --font-size-xs: 12px;
-  --font-size-xs--line-height: 16px;
-  --font-size-sm: 13px;
+  --font-size-xs--line-height: 18px;
+  --font-size-sm: 14px;
   --font-size-sm--line-height: 20px;
-  --font-size-base: 15px;
+  --font-size-base: 16px;
   --font-size-base--line-height: 24px;
-  --font-size-lg: 17px;
-  --font-size-lg--line-height: 26px;
+  --font-size-lg: 18px;
+  --font-size-lg--line-height: 28px;
   --font-size-xl: 20px;
-  --font-size-xl--line-height: 28px;
-  --font-size-2xl: 26px;
-  --font-size-2xl--line-height: 34px;
-  --font-size-3xl: 32px;
-  --font-size-3xl--line-height: 40px;
+  --font-size-xl--line-height: 30px;
+  --font-size-2xl: 24px;
+  --font-size-2xl--line-height: 32px;
+  --font-size-3xl: 30px;
+  --font-size-3xl--line-height: 38px;
   --font-size-display: 48px;
-  --font-size-display--line-height: 56px;
+  --font-size-display--line-height: 60px;
 
   /* ============ CHART (analytics fallback) ============ */
   --color-chart-1: hsl(var(--brand));
@@ -108,100 +109,107 @@
   --color-chart-4: hsl(var(--warning));
   --color-chart-5: hsl(var(--topic-frontend));
 
-  /* ============ RADII ============ */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
-  --radius-2xl: 18px;
-  --radius-3xl: 22px;
+  /* ============ RADII (Wavekit: control 8, card 12) ============ */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
   --radius-4xl: 28px;
+
+  /* ============ ELEVATION (Wavekit layered Untitled-UI shadows) ============ */
+  --shadow-xs: 0 1px 2px rgba(10, 13, 18, 0.05);
+  --shadow-sm: 0 1px 3px rgba(10, 13, 18, 0.1), 0 1px 2px -1px rgba(10, 13, 18, 0.1);
+  --shadow-md: 0 4px 6px -2px rgba(10, 13, 18, 0.03), 0 12px 16px -4px rgba(10, 13, 18, 0.08);
+  --shadow-lg: 0 8px 8px -4px rgba(10, 13, 18, 0.03), 0 20px 24px -4px rgba(10, 13, 18, 0.08);
+  --shadow-xl: 0 20px 24px -4px rgba(10, 13, 18, 0.08), 0 8px 8px -4px rgba(10, 13, 18, 0.03);
 }
 
 :root {
-  /* Surfaces */
-  --background: 220 14% 96%;
+  /* Surfaces — Wavekit: primary=white, page=neutral-50, tertiary=neutral-100 */
+  --background: 0 0% 98%;
   --background-elevated: 0 0% 100%;
-  --background-subtle: 220 14% 98%;
+  --background-subtle: 0 0% 96%;
 
-  /* Text */
-  --foreground: 222 47% 11%;
-  --foreground-muted: 215 16% 47%;
-  --foreground-subtle: 215 13% 65%;
+  /* Text — Wavekit: primary=neutral-900, tertiary=neutral-600, quaternary=neutral-500 */
+  --foreground: 0 0% 9%;
+  --foreground-muted: 0 0% 32%;
+  --foreground-subtle: 0 0% 45%;
 
-  /* Borders */
-  --border: 220 13% 88%;
-  --border-strong: 220 13% 78%;
+  /* Borders — Wavekit: border-secondary=neutral-200, border-primary=neutral-300 */
+  --border: 0 0% 90%;
+  --border-strong: 0 0% 83%;
 
-  /* Brand */
-  --brand: 234 89% 56%;
+  /* Brand — Wavekit default blue */
+  --brand: 221 83% 53%;
   --brand-foreground: 0 0% 100%;
-  --brand-subtle: 234 100% 96%;
-  --brand-dim: 234 50% 40%;
+  --brand-subtle: 214 100% 97%;
+  --brand-dim: 224 76% 48%;
 
-  /* Status */
-  --success: 142 71% 36%;
+  /* Status — Wavekit green/amber/red */
+  --success: 142 76% 36%;
   --success-foreground: 0 0% 100%;
-  --success-subtle: 142 76% 94%;
+  --success-subtle: 138 76% 97%;
 
   --warning: 32 95% 44%;
   --warning-foreground: 0 0% 100%;
-  --warning-subtle: 38 92% 95%;
+  --warning-subtle: 48 100% 96%;
 
   --danger: 0 72% 51%;
   --danger-foreground: 0 0% 100%;
-  --danger-subtle: 0 86% 96%;
+  --danger-subtle: 0 86% 97%;
 
-  /* Topic accents */
-  --topic-dsa: 234 89% 56%;
-  --topic-frontend: 322 81% 56%;
-  --topic-backend: 142 71% 36%;
+  /* Topic accents — recolored onto Wavekit primitives */
+  --topic-dsa: 221 83% 53%;
+  --topic-frontend: 330 81% 60%;
+  --topic-backend: 142 76% 36%;
   --topic-dbms: 32 95% 44%;
-  --topic-system-design: 271 76% 53%;
+  --topic-system-design: 262 83% 58%;
   --topic-oops: 199 89% 48%;
   --topic-os: 0 72% 51%;
-  --topic-default: 215 16% 47%;
+  --topic-default: 0 0% 45%;
 
-  --radius: 0.625rem;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --background: 222 47% 7%;
-  --background-elevated: 222 47% 10%;
-  --background-subtle: 222 47% 8%;
+  --background: 0 0% 7%;
+  --background-elevated: 0 0% 11%;
+  --background-subtle: 0 0% 9%;
 
   --foreground: 0 0% 96%;
-  --foreground-muted: 215 16% 70%;
-  --foreground-subtle: 215 13% 50%;
+  --foreground-muted: 0 0% 64%;
+  --foreground-subtle: 0 0% 45%;
 
-  --border: 217 33% 17%;
-  --border-strong: 217 33% 25%;
+  --border: 0 0% 20%;
+  --border-strong: 0 0% 28%;
 
-  --brand: 234 89% 64%;
-  --brand-foreground: 222 47% 7%;
-  --brand-subtle: 234 50% 14%;
-  --brand-dim: 234 89% 56%;
+  --brand: 217 91% 60%;
+  --brand-foreground: 0 0% 100%;
+  --brand-subtle: 224 64% 16%;
+  --brand-dim: 221 83% 53%;
 
   --success: 142 71% 45%;
   --success-foreground: 0 0% 100%;
-  --success-subtle: 142 50% 15%;
+  --success-subtle: 142 40% 14%;
 
   --warning: 32 95% 52%;
-  --warning-foreground: 222 47% 7%;
-  --warning-subtle: 32 50% 15%;
+  --warning-foreground: 0 0% 7%;
+  --warning-subtle: 32 45% 15%;
 
   --danger: 0 72% 60%;
-  --danger-foreground: 222 47% 7%;
-  --danger-subtle: 0 50% 15%;
+  --danger-foreground: 0 0% 100%;
+  --danger-subtle: 0 45% 15%;
 
-  --topic-dsa: 234 89% 64%;
-  --topic-frontend: 322 81% 64%;
+  --topic-dsa: 217 91% 60%;
+  --topic-frontend: 330 81% 68%;
   --topic-backend: 142 71% 45%;
   --topic-dbms: 32 95% 52%;
-  --topic-system-design: 271 76% 60%;
+  --topic-system-design: 262 83% 68%;
   --topic-oops: 199 89% 55%;
   --topic-os: 0 72% 60%;
-  --topic-default: 215 16% 70%;
+  --topic-default: 0 0% 64%;
 }
 
 @layer base {
