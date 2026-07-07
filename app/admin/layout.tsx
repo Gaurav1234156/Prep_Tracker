@@ -21,9 +21,17 @@ export default async function AdminLayout({
     <div className="flex flex-1 flex-col">
       <header className="border-b border-border">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
-          <Link href="/admin" className="font-semibold">
-            Interview Experience Platform
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link href="/admin" className="font-semibold">
+              Interview Experience Platform
+            </Link>
+            <Link
+              href="/admin/submissions"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Submissions
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-muted-foreground text-sm">{user.email}</span>
             <form action={signOut}>

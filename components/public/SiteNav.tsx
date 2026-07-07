@@ -55,6 +55,12 @@ export async function SiteNav() {
                   Companies
                 </Link>
                 <Link
+                  href="/topic-areas"
+                  className="rounded-md px-3 py-1.5 text-foreground-muted transition-colors hover:bg-background-subtle hover:text-foreground"
+                >
+                  Topics
+                </Link>
+                <Link
                   href="/search"
                   className="rounded-md px-3 py-1.5 text-foreground-muted transition-colors hover:bg-background-subtle hover:text-foreground"
                 >
@@ -68,6 +74,14 @@ export async function SiteNav() {
             </div>
 
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden sm:inline-flex"
+                render={<Link href="/experiences/new" />}
+              >
+                Share experience
+              </Button>
               {user ? (
                 <UserMenu
                   email={user.email}
