@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +39,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function SignupForm() {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
 
@@ -72,12 +74,13 @@ export function SignupForm() {
 
       if (!data.session) {
         toast.success("Account created. Check your email to confirm, then log in.");
-        window.location.href = "/login";
+        router.replace("/login");
         return;
       }
 
       toast.success("Welcome!");
-      window.location.href = "/onboarding";
+      router.replace("/onboarding");
+      router.refresh();
     } finally {
       setSubmitting(false);
     }

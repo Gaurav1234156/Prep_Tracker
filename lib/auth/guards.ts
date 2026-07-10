@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { User, UserRole } from "@prisma/client";
 
+import { ensureDbUser } from "@/lib/auth/ensure-db-user";
 import { prisma } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,7 +32,16 @@ export const getCurrentDbUser = cache(
 
     if (!authUser?.email) return null;
 
-    return prisma.user.findUnique({ where: { email: authUser.email } });
+    const existing = await prisma.user.findUnique({
+      where: { email: authUser.email },
+    });
+    if (existing) return existing;
+
+    try {
+      return await ensureDbUser(authUser);
+    } catch {
+      return null;
+    }
   },
 );
 

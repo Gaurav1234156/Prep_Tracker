@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { cache } from "react";
 
-export const getInterviewDetail = cache(async (id: string) => {
+export async function fetchInterviewDetail(id: string) {
   return prisma.interview.findUnique({
     where: { id },
     include: {
@@ -29,8 +29,36 @@ export const getInterviewDetail = cache(async (id: string) => {
       assets: { where: { roundId: null } },
     },
   });
-});
+}
+
+/** Cached for Server Components only — do not use in Route Handlers. */
+export const getInterviewDetail = cache(fetchInterviewDetail);
 
 export type InterviewDetail = NonNullable<
-  Awaited<ReturnType<typeof getInterviewDetail>>
+  Awaited<ReturnType<typeof fetchInterviewDetail>>
 >;
+
+export async function fetchRelatedExperiences(interview: InterviewDetail) {
+  const [sameCompany, sameRole] = await Promise.all([
+    prisma.interview.findMany({
+      where: {
+        companyId: interview.companyId,
+        id: { not: interview.id },
+      },
+      take: 4,
+      include: { company: true, roleLevel: true },
+    }),
+    prisma.interview.findMany({
+      where: {
+        roleLevelId: interview.roleLevelId,
+        id: { not: interview.id },
+      },
+      take: 4,
+      include: { company: true, roleLevel: true },
+    }),
+  ]);
+
+  return [...sameCompany, ...sameRole].filter(
+    (item, index, self) => self.findIndex((t) => t.id === item.id) === index,
+  );
+}

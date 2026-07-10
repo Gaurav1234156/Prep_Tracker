@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { InterviewDetail } from "@/lib/queries/interview-detail";
 import { cn } from "@/lib/utils";
-import { Clock, Lightbulb, UserCheck, Video } from "lucide-react";
+import { Clock, Lightbulb, UserCheck, Video, Mic, FileText } from "lucide-react";
 import { ScrollReveal } from "./ScrollReveal";
 import { SubTopicEntriesList } from "./SubTopicEntriesList";
 
@@ -20,6 +20,10 @@ export function RoundSection({ round }: { round: Round }) {
     outcome,
     keyLearnings,
     topicCoverages,
+    recordingUrl,
+    transcriptUrl,
+    assessmentPattern,
+    pocRemarks,
   } = round;
 
   const outcomeColors: Record<string, string> = {
@@ -91,6 +95,51 @@ export function RoundSection({ round }: { round: Round }) {
           </div>
         )}
       </ScrollReveal>
+
+      {(recordingUrl || transcriptUrl) && (
+        <ScrollReveal className="flex flex-wrap gap-2">
+          {recordingUrl ? (
+            <a
+              href={recordingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary hover:bg-secondary transition-colors"
+            >
+              <Mic className="h-3.5 w-3.5" />
+              Interview Recording
+            </a>
+          ) : null}
+          {transcriptUrl ? (
+            <a
+              href={transcriptUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary hover:bg-secondary transition-colors"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Interview Transcript
+            </a>
+          ) : null}
+        </ScrollReveal>
+      )}
+
+      {assessmentPattern && (
+        <ScrollReveal className="rounded-md border border-border bg-secondary/30 p-4 text-xs text-foreground">
+          <span className="text-[9px] font-extrabold uppercase tracking-widest text-muted-foreground block mb-1">
+            Assessment Pattern
+          </span>
+          {assessmentPattern}
+        </ScrollReveal>
+      )}
+
+      {pocRemarks && (
+        <ScrollReveal className="rounded-md border border-border bg-secondary/30 p-4 text-xs text-foreground italic">
+          <span className="text-[9px] font-extrabold uppercase tracking-widest text-muted-foreground block mb-1 not-italic">
+            Company Remarks
+          </span>
+          {pocRemarks}
+        </ScrollReveal>
+      )}
 
       {/* Sub Topic Entries List (Client-side interactive list) */}
       {topicCoverages.length > 0 && (

@@ -3,14 +3,9 @@ import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/public/EmptyState";
 import { Building2, Compass, ExternalLink, Layout } from "lucide-react";
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import { CompanyLogo } from "@/components/common/CompanyLogo";
-
-const CompanyTabs = dynamic(
-  () => import("@/components/public/CompanyTabs").then((mod) => mod.CompanyTabs),
-  { loading: () => <div className="h-96 bg-card border border-border rounded-md animate-pulse flex items-center justify-center text-xs text-muted-foreground/50 font-bold">Loading company experiences and analytics...</div> }
-);
+import { CompanyContentGate } from "@/components/public/CompanyContentGate";
 
 export const revalidate = 3600; // ISR cache for 1 hour
 
@@ -45,43 +40,14 @@ interface CompanyPageProps {
 export default async function CompanyPage({ params }: CompanyPageProps) {
   const { slug } = await params;
 
-  // Retrieve complete company structure including interviews, rounds, and subtopic entries
   const company = await prisma.company.findUnique({
     where: { slug },
     include: {
+      _count: { select: { jobs: true, interviews: true } },
       interviews: {
-        orderBy: {
-          year: "desc",
-        },
-        include: {
-          roleLevel: true,
-          company: {
-            select: {
-              name: true,
-              logoUrl: true,
-              slug: true,
-            },
-          },
-          rounds: {
-            orderBy: {
-              roundNumber: "asc",
-            },
-            include: {
-              topicCoverages: {
-                include: {
-                  entries: {
-                    include: {
-                      subTopic: {
-                        include: {
-                          topicArea: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+        select: {
+          year: true,
+          roleLevel: { select: { id: true, name: true } },
         },
       },
     },
@@ -91,17 +57,17 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
     notFound();
   }
 
-  // Derive core statistics
-  const totalInterviews = company.interviews.length;
-  
+  const hasIntelligence = company._count.jobs > 0;
+  const totalInterviews = company._count.interviews;
+  const hasContent = hasIntelligence || totalInterviews > 0;
+
   const levelsMap = new Map<string, { id: string; name: string }>();
-  let maxYear = 0;
-  company.interviews.forEach((i) => {
-    if (i.roleLevel) {
-      levelsMap.set(i.roleLevel.id, { id: i.roleLevel.id, name: i.roleLevel.name });
-    }
-    if (i.year > maxYear) {
-      maxYear = i.year;
+  company.interviews.forEach((interview) => {
+    if (interview.roleLevel) {
+      levelsMap.set(interview.roleLevel.id, {
+        id: interview.roleLevel.id,
+        name: interview.roleLevel.name,
+      });
     }
   });
 
@@ -166,6 +132,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 <CompanyLogo
                   name={company.name}
                   website={company.websiteUrl}
+                  logoUrl={company.logoUrl}
                   size="lg"
                   className="relative bg-white p-2 ring-1 ring-white/30 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.6)]"
                 />
@@ -201,7 +168,17 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 {uniqueLevels.length}{" "}
                 {uniqueLevels.length === 1 ? "level" : "levels"}
               </span>
-              {company.ctc != null ? (
+              {company.ctcMin != null || company.ctcMax != null ? (
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/20 px-3 py-1.5 text-emerald-200 ring-1 ring-emerald-500/30 font-semibold">
+                  💰 CTC:{" "}
+                  {company.ctcMin != null &&
+                  company.ctcMax != null &&
+                  company.ctcMin !== company.ctcMax
+                    ? `${company.ctcMin}–${company.ctcMax}`
+                    : (company.ctcMin ?? company.ctcMax)}{" "}
+                  LPA
+                </span>
+              ) : company.ctc != null ? (
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/20 px-3 py-1.5 text-emerald-200 ring-1 ring-emerald-500/30 font-semibold">
                   💰 CTC: {company.ctc} LPA
                 </span>
@@ -217,20 +194,19 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
       </header>
 
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-
-      {/* Dynamic Interactive tabs panel */}
-      {totalInterviews === 0 ? (
-        <EmptyState
-          title="No Experiences Logged"
-          description={`We don't have any candidate experiences on file for ${company.name} yet. Check back soon or visit other hiring firms.`}
-          icon={Building2}
-        />
-      ) : (
-        <CompanyTabs
-          interviews={company.interviews}
-          roleLevels={uniqueLevels}
-        />
-      )}
+        {hasContent ? (
+          <CompanyContentGate
+            companySlug={slug}
+            companyName={company.name}
+            hasContent={hasContent}
+          />
+        ) : (
+          <EmptyState
+            title="No Experiences Logged"
+            description={`We don't have any candidate experiences on file for ${company.name} yet. Check back soon or visit other hiring firms.`}
+            icon={Building2}
+          />
+        )}
       </div>
     </div>
   );

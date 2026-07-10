@@ -32,6 +32,19 @@ function getTopicAreaBorder(slug: string) {
   return TOPIC_AREA_COLORS[slug] || "border-l-primary";
 }
 
+function getDifficultyStyles(difficulty: string | null | undefined) {
+  switch (difficulty) {
+    case "EASY":
+      return "bg-emerald-500/10 text-emerald-700 border-emerald-500/20";
+    case "MEDIUM":
+      return "bg-amber-500/10 text-amber-700 border-amber-500/20";
+    case "HARD":
+      return "bg-rose-500/10 text-rose-700 border-rose-500/20";
+    default:
+      return "";
+  }
+}
+
 export function SubTopicEntriesList({ coverages }: { coverages: TopicCoverage[] }) {
   const [expandedEntries, setExpandedEntries] = useState<Record<string, boolean>>({});
 
@@ -61,7 +74,11 @@ export function SubTopicEntriesList({ coverages }: { coverages: TopicCoverage[] 
               ) : (
                 <div className="flex flex-wrap gap-2 pt-1">
                   {cov.entries.map((entry) => {
-                    const hasDetails = !!(entry.exactQuestionText || entry.referenceUrl);
+                    const hasDetails = !!(
+                      entry.exactQuestionText ||
+                      entry.referenceUrl ||
+                      entry.difficulty
+                    );
                     const isExpanded = !!expandedEntries[entry.id];
                     
                     return (
@@ -79,13 +96,29 @@ export function SubTopicEntriesList({ coverages }: { coverages: TopicCoverage[] 
                               )}
                             >
                               <span>{entry.subTopic.name}</span>
+                              {entry.difficulty ? (
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[9px] px-1 py-0 ml-1 ${getDifficultyStyles(entry.difficulty)}`}
+                                >
+                                  {entry.difficulty}
+                                </Badge>
+                              ) : null}
                               {entry.exactQuestionText && <FileText className="size-3 opacity-80" />}
                               {entry.referenceUrl && <LinkIcon className="size-3 opacity-80" />}
                               {isExpanded ? <ChevronUp className="size-3 ml-0.5" /> : <ChevronDown className="size-3 ml-0.5" />}
                             </button>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] uppercase tracking-wider font-bold bg-secondary text-muted-foreground border border-border">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] uppercase tracking-wider font-bold bg-secondary text-muted-foreground border border-border gap-1.5">
                               {entry.subTopic.name}
+                              {entry.difficulty ? (
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[9px] px-1 py-0 ${getDifficultyStyles(entry.difficulty)}`}
+                                >
+                                  {entry.difficulty}
+                                </Badge>
+                              ) : null}
                             </span>
                           )}
                         </div>

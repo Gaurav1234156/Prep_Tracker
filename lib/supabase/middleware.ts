@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { safeNextPath } from "@/lib/auth/safe-next-path";
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -35,10 +37,10 @@ export async function updateSession(request: NextRequest) {
   const isAdminPath = path.startsWith("/admin");
   const isAuthPage = path === "/login" || path === "/signup";
 
-  // Logged-in users on the auth pages → bounce to /dashboard
+  // Logged-in users on auth pages → honor ?next= when present.
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = safeNextPath(url.searchParams.get("next"));
     url.search = "";
     return NextResponse.redirect(url);
   }

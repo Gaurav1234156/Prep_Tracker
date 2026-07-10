@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "@/lib/db";
+import { ensureDbUser } from "@/lib/auth/ensure-db-user";
+import { safeNextPath } from "@/lib/auth/safe-next-path";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
-  const next = req.nextUrl.searchParams.get("next") ?? "/dashboard";
+  const next = safeNextPath(req.nextUrl.searchParams.get("next"));
 
   if (!code) {
     return NextResponse.redirect(new URL("/login", req.url));
@@ -27,35 +28,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Ensure Prisma User row exists for OAuth-created Supabase users.
-  let dbUser = await prisma.user.findUnique({
-    where: { email: authUser.email },
-  });
-
-  if (!dbUser) {
-    const metadata = (authUser.user_metadata ?? {}) as Record<string, unknown>;
-    const name =
-      typeof metadata.full_name === "string"
-        ? metadata.full_name
-        : typeof metadata.name === "string"
-          ? metadata.name
-          : null;
-    const avatarUrl =
-      typeof metadata.avatar_url === "string"
-        ? metadata.avatar_url
-        : typeof metadata.picture === "string"
-          ? metadata.picture
-          : null;
-
-    dbUser = await prisma.user.create({
-      data: {
-        email: authUser.email,
-        name,
-        avatarUrl,
-        role: "STUDENT",
-      },
-    });
-  }
+  const dbUser = await ensureDbUser(authUser);
 
   // Force onboarding for new accounts.
   if (!dbUser.onboardedAt) {

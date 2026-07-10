@@ -81,6 +81,7 @@ export function ExperienceHero({
               <CompanyLogo
                 name={company.name}
                 website={company.websiteUrl}
+                logoUrl={company.logoUrl}
                 size="lg"
                 className="relative bg-white p-2 ring-1 ring-white/30 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.6)]"
               />

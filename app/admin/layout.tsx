@@ -26,6 +26,12 @@ export default async function AdminLayout({
               Interview Experience Platform
             </Link>
             <Link
+              href="/"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              View site
+            </Link>
+            <Link
               href="/admin/submissions"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >

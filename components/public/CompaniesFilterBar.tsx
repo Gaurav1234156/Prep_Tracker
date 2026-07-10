@@ -5,11 +5,16 @@ import { useEffect, useState, useTransition } from "react";
 import { Search, RotateCcw, Filter, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  CTC_RANGE_OPTIONS,
+  ctcRangeToParams,
+  paramsToCtcRangeId,
+  type CtcRangeId,
+} from "@/lib/constants/ctc-ranges";
 import { cn } from "@/lib/utils";
 
 interface FilterBarProps {
   roleLevels: { id: string; name: string; slug: string }[];
-  years: number[];
   showProfileFilter?: boolean;
 }
 
@@ -27,7 +32,6 @@ const BRANCH_OPTIONS = [
 
 export function CompaniesFilterBar({
   roleLevels,
-  years,
   showProfileFilter = false,
 }: FilterBarProps) {
   const router = useRouter();
@@ -39,9 +43,6 @@ export function CompaniesFilterBar({
   const [selectedLevels, setSelectedLevels] = useState<string[]>(
     searchParams.get("roleLevel")?.split(",").filter(Boolean) || [],
   );
-  const [selectedYears, setSelectedYears] = useState<number[]>(
-    searchParams.get("year")?.split(",").map(Number).filter(Boolean) || [],
-  );
   const [selectedBranches, setSelectedBranches] = useState<string[]>(
     searchParams.get("branch")?.split(",").filter(Boolean) || [],
   );
@@ -49,30 +50,30 @@ export function CompaniesFilterBar({
   const [cgpaMin, setCgpaMin] = useState<number>(
     Number.isFinite(initialCgpa) && initialCgpa >= 6 ? initialCgpa : 6,
   );
-  const [ctcMin, setCtcMin] = useState<string>(searchParams.get("ctcMin") || "");
-  const [ctcMax, setCtcMax] = useState<string>(searchParams.get("ctcMax") || "");
+  const [selectedCtcRange, setSelectedCtcRange] = useState<CtcRangeId | null>(
+    paramsToCtcRangeId(
+      searchParams.get("ctcMin"),
+      searchParams.get("ctcMax"),
+    ),
+  );
 
   const sync = (next: {
     q?: string;
     levels?: string[];
-    years?: number[];
     branches?: string[];
     cgpaMin?: number | null;
-    ctcMin?: string | null;
-    ctcMax?: string | null;
+    ctcRange?: CtcRangeId | null;
   }) => {
     const params = new URLSearchParams();
     const q = next.q ?? search;
     const levels = next.levels ?? selectedLevels;
-    const yrs = next.years ?? selectedYears;
     const brs = next.branches ?? selectedBranches;
     const cMin = next.cgpaMin === undefined ? cgpaMin : next.cgpaMin;
-    const ctMin = next.ctcMin === undefined ? ctcMin : next.ctcMin;
-    const ctMax = next.ctcMax === undefined ? ctcMax : next.ctcMax;
+    const ctcRange = next.ctcRange === undefined ? selectedCtcRange : next.ctcRange;
+    const { ctcMin: ctMin, ctcMax: ctMax } = ctcRangeToParams(ctcRange);
 
     if (q.trim()) params.set("q", q.trim());
     if (levels.length > 0) params.set("roleLevel", levels.join(","));
-    if (yrs.length > 0) params.set("year", yrs.map(String).join(","));
     if (showProfileFilter && brs.length > 0) params.set("branch", brs.join(","));
     if (showProfileFilter && cMin != null && cMin > 6) {
       params.set("cgpaMin", String(cMin));
@@ -97,18 +98,11 @@ export function CompaniesFilterBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  // Debounced CTC sync
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const currentMin = searchParams.get("ctcMin") || "";
-      const currentMax = searchParams.get("ctcMax") || "";
-      if (ctcMin !== currentMin || ctcMax !== currentMax) {
-        sync({ ctcMin, ctcMax });
-      }
-    }, 450);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctcMin, ctcMax]);
+  const toggleCtcRange = (id: CtcRangeId) => {
+    const next = selectedCtcRange === id ? null : id;
+    setSelectedCtcRange(next);
+    sync({ ctcRange: next });
+  };
 
   const toggleLevel = (id: string) => {
     const next = selectedLevels.includes(id)
@@ -116,13 +110,6 @@ export function CompaniesFilterBar({
       : [...selectedLevels, id];
     setSelectedLevels(next);
     sync({ levels: next });
-  };
-  const toggleYear = (yr: number) => {
-    const next = selectedYears.includes(yr)
-      ? selectedYears.filter((x) => x !== yr)
-      : [...selectedYears, yr];
-    setSelectedYears(next);
-    sync({ years: next });
   };
   const toggleBranch = (b: string) => {
     const next = selectedBranches.includes(b)
@@ -139,11 +126,9 @@ export function CompaniesFilterBar({
   const resetFilters = () => {
     setSearch("");
     setSelectedLevels([]);
-    setSelectedYears([]);
     setSelectedBranches([]);
     setCgpaMin(6);
-    setCtcMin("");
-    setCtcMax("");
+    setSelectedCtcRange(null);
     startTransition(() => {
       router.push(pathname);
     });
@@ -152,11 +137,9 @@ export function CompaniesFilterBar({
   const hasActiveFilters =
     search.trim() !== "" ||
     selectedLevels.length > 0 ||
-    selectedYears.length > 0 ||
     selectedBranches.length > 0 ||
     (showProfileFilter && cgpaMin > 6) ||
-    ctcMin !== "" ||
-    ctcMax !== "";
+    selectedCtcRange != null;
 
   return (
     <div className="bg-card border border-border rounded-lg p-5 md:p-6 space-y-6">
@@ -178,19 +161,36 @@ export function CompaniesFilterBar({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_0.8fr_1fr] gap-6">
-        <FilterColumn label="Company name">
-          <div className="relative">
-            <Search className="size-4 absolute inset-y-0 left-3 my-auto text-muted-foreground/60" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filter by name…"
-              className="w-full text-sm pl-9 pr-3 h-9 rounded-md bg-background border border-input text-foreground focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
-            />
-          </div>
-        </FilterColumn>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6 items-start">
+        <div className="space-y-4">
+          <FilterColumn label="Company name">
+            <div className="relative">
+              <Search className="size-4 absolute inset-y-0 left-3 my-auto text-muted-foreground/60" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Filter by name…"
+                className="w-full text-sm pl-9 pr-3 h-9 rounded-md bg-background border border-input text-foreground focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
+              />
+            </div>
+          </FilterColumn>
+
+          <FilterColumn label="CTC Range (LPA)">
+            <ChipRow>
+              {CTC_RANGE_OPTIONS.map((range) => (
+                <Chip
+                  key={range.id}
+                  active={selectedCtcRange === range.id}
+                  onClick={() => toggleCtcRange(range.id)}
+                >
+                  {selectedCtcRange === range.id && <Check className="size-3" />}
+                  {range.label}
+                </Chip>
+              ))}
+            </ChipRow>
+          </FilterColumn>
+        </div>
 
         <FilterColumn label="Role levels">
           <ChipRow>
@@ -205,42 +205,6 @@ export function CompaniesFilterBar({
               </Chip>
             ))}
           </ChipRow>
-        </FilterColumn>
-
-        <FilterColumn label="Interview years">
-          <ChipRow>
-            {years.map((year) => (
-              <Chip
-                key={year}
-                active={selectedYears.includes(year)}
-                onClick={() => toggleYear(year)}
-              >
-                {year}
-              </Chip>
-            ))}
-          </ChipRow>
-        </FilterColumn>
-
-        <FilterColumn label="CTC Range (LPA)">
-          <div className="flex items-center gap-1.5">
-            <input
-              type="number"
-              min={0}
-              placeholder="Min"
-              value={ctcMin}
-              onChange={(e) => setCtcMin(e.target.value)}
-              className="w-full text-sm px-2.5 h-9 rounded-md bg-background border border-input text-foreground focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
-            />
-            <span className="text-muted-foreground text-xs font-medium">to</span>
-            <input
-              type="number"
-              min={0}
-              placeholder="Max"
-              value={ctcMax}
-              onChange={(e) => setCtcMax(e.target.value)}
-              className="w-full text-sm px-2.5 h-9 rounded-md bg-background border border-input text-foreground focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
-            />
-          </div>
         </FilterColumn>
       </div>
 

@@ -16,7 +16,12 @@ export function TopicQuestionCard({ q }: { q: TopicAreaQuestion }) {
       {/* Label row: company + role + year */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div className="flex items-center gap-3 min-w-0">
-          <CompanyLogo name={q.company.name} website={q.company.websiteUrl} size="sm" />
+          <CompanyLogo
+            name={q.company.name}
+            website={q.company.websiteUrl}
+            logoUrl={q.company.logoUrl}
+            size="sm"
+          />
           <div className="min-w-0">
             <Link
               href={`/companies/${q.company.slug}`}

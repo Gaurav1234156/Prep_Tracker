@@ -5,7 +5,6 @@ import { prisma } from "@/lib/db";
 interface GetCompaniesListFilters {
   q?: string;
   roleLevels?: string[]; // IDs of role levels
-  years?: number[];
   cursor?: string; // ID of the company
   limit?: number;
   branches?: string[]; // Branch enum values
@@ -18,7 +17,6 @@ interface GetCompaniesListFilters {
 export async function getCompaniesList({
   q,
   roleLevels,
-  years,
   cursor,
   limit = 9,
   branches,
@@ -27,27 +25,37 @@ export async function getCompaniesList({
   ctcMin,
   ctcMax,
 }: GetCompaniesListFilters) {
-  const whereClause: any = {};
+  const baseFilters: any[] = [];
 
   if (q && q.trim()) {
-    whereClause.name = {
-      contains: q.trim(),
-      mode: "insensitive",
-    };
+    baseFilters.push({
+      name: {
+        contains: q.trim(),
+        mode: "insensitive",
+      },
+    });
   }
 
   if (ctcMin != null || ctcMax != null) {
-    whereClause.ctc = {};
-    if (ctcMin != null) whereClause.ctc.gte = ctcMin;
-    if (ctcMax != null) whereClause.ctc.lte = ctcMax;
+    const ctcFilters: object[] = [];
+    const singleCtc: Record<string, number> = {};
+    if (ctcMin != null) singleCtc.gte = ctcMin;
+    if (ctcMax != null) singleCtc.lte = ctcMax;
+    ctcFilters.push({ ctc: singleCtc });
+
+    const rangeFilter: Record<string, object> = {};
+    if (ctcMin != null) rangeFilter.ctcMax = { gte: ctcMin };
+    if (ctcMax != null) rangeFilter.ctcMin = { lte: ctcMax };
+    if (Object.keys(rangeFilter).length > 0) {
+      ctcFilters.push(rangeFilter);
+    }
+
+    baseFilters.push({ OR: ctcFilters });
   }
 
   const interviewFilters: any = {};
   if (roleLevels && roleLevels.length > 0) {
     interviewFilters.roleLevelId = { in: roleLevels };
-  }
-  if (years && years.length > 0) {
-    interviewFilters.year = { in: years };
   }
   if (branches && branches.length > 0) {
     interviewFilters.candidateBranch = { in: branches };
@@ -57,9 +65,17 @@ export async function getCompaniesList({
     if (cgpaMin != null) interviewFilters.candidateCgpa.gte = cgpaMin;
     if (cgpaMax != null) interviewFilters.candidateCgpa.lte = cgpaMax;
   }
+
   if (Object.keys(interviewFilters).length > 0) {
-    whereClause.interviews = { some: interviewFilters };
+    baseFilters.push({ interviews: { some: interviewFilters } });
+  } else {
+    baseFilters.push({
+      OR: [{ interviews: { some: {} } }, { jobs: { some: {} } }],
+    });
   }
+
+  const whereClause =
+    baseFilters.length === 1 ? baseFilters[0] : { AND: baseFilters };
 
   const companies = await prisma.company.findMany({
     // Single SQL JOIN instead of separate relation queries → one DB round-trip.
@@ -68,12 +84,14 @@ export async function getCompaniesList({
     take: limit + 1, // Get one extra to check if there is a next page
     cursor: cursor ? { id: cursor } : undefined,
     skip: cursor ? 1 : 0,
-    orderBy: {
-      name: "asc",
-    },
+    orderBy: [
+      { jobs: { _count: "desc" } },
+      { interviews: { _count: "desc" } },
+      { name: "asc" },
+    ],
     include: {
       _count: {
-        select: { interviews: true },
+        select: { interviews: true, jobs: true },
       },
       interviews: {
         select: {
@@ -120,9 +138,13 @@ export async function getCompaniesList({
       websiteUrl: c.websiteUrl,
       createdAt: c.createdAt,
       interviewCount: c._count.interviews,
+      jobCount: c._count.jobs,
+      hasIntelligence: c._count.jobs > 0,
       roleLevelsCovered: Array.from(levelsMap.values()),
       mostRecentYear: maxYear > 0 ? maxYear : null,
       ctc: c.ctc,
+      ctcMin: c.ctcMin,
+      ctcMax: c.ctcMax,
     };
   });
 
@@ -132,25 +154,15 @@ export async function getCompaniesList({
   };
 }
 
-// Role levels and the distinct year list change rarely, so we cache them across
-// requests (5 min window + tag invalidation) to keep them off the page's hot path.
+// Role levels change rarely, so we cache them across requests (5 min window +
+// tag invalidation) to keep them off the page's hot path.
 export const getFilterMetadata = unstable_cache(
   async () => {
-    const [roleLevels, yearsData] = await Promise.all([
-      prisma.roleLevel.findMany({
-        orderBy: { name: "asc" },
-      }),
-      prisma.interview.findMany({
-        select: { year: true },
-        distinct: ["year"],
-        orderBy: { year: "desc" },
-      }),
-    ]);
+    const roleLevels = await prisma.roleLevel.findMany({
+      orderBy: { name: "asc" },
+    });
 
-    return {
-      roleLevels,
-      years: yearsData.map((y) => y.year),
-    };
+    return { roleLevels };
   },
   ["companies-filter-metadata"],
   { revalidate: 300, tags: ["filter-metadata"] },

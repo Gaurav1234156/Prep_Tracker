@@ -118,6 +118,10 @@ export async function createInterviewTree(
         interviewStyle: round.interviewStyle ?? null,
         outcome: round.outcome,
         keyLearnings: round.keyLearnings ?? null,
+        assessmentPattern: round.assessmentPattern ?? null,
+        pocRemarks: round.pocRemarks ?? null,
+        recordingUrl: round.recordingUrl || null,
+        transcriptUrl: round.transcriptUrl || null,
         interviewId: interview.id,
         assets: { create: assetsForRound(payload.assets, rIndex) },
       },
@@ -152,6 +156,10 @@ export async function createInterviewTree(
             orderIndex: entryIndex,
             exactQuestionText: entry.exactQuestionText || null,
             referenceUrl: entry.referenceUrl || null,
+            externalQuestionId: entry.externalQuestionId || null,
+            questionType: entry.questionType || null,
+            difficulty: entry.difficulty ?? null,
+            skillsAssessed: entry.skillsAssessed || null,
           },
         });
       }
@@ -202,6 +210,10 @@ export async function replaceInterviewTree(
         interviewStyle: round.interviewStyle ?? null,
         outcome: round.outcome,
         keyLearnings: round.keyLearnings ?? null,
+        assessmentPattern: round.assessmentPattern ?? null,
+        pocRemarks: round.pocRemarks ?? null,
+        recordingUrl: round.recordingUrl || null,
+        transcriptUrl: round.transcriptUrl || null,
         interviewId: id,
         assets: { create: assetsForRound(payload.assets, rIndex) },
       },
@@ -236,6 +248,10 @@ export async function replaceInterviewTree(
             orderIndex: entryIndex,
             exactQuestionText: entry.exactQuestionText || null,
             referenceUrl: entry.referenceUrl || null,
+            externalQuestionId: entry.externalQuestionId || null,
+            questionType: entry.questionType || null,
+            difficulty: entry.difficulty ?? null,
+            skillsAssessed: entry.skillsAssessed || null,
           },
         });
       }

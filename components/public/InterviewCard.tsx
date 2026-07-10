@@ -74,6 +74,7 @@ export function InterviewCard({
           <CompanyLogo
             name={interview.company.name}
             website={interview.company.websiteUrl}
+            logoUrl={interview.company.logoUrl}
             size="sm"
           />
           <div className="min-w-0">

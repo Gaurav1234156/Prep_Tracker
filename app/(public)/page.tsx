@@ -75,9 +75,12 @@ async function RecentExperiencesRowAsync() {
 async function FeaturedCompaniesRowAsync() {
   const featuredCompaniesRaw = await prisma.company.findMany({
     relationLoadStrategy: "join",
+    where: {
+      OR: [{ interviews: { some: {} } }, { jobs: { some: {} } }],
+    },
     take: 8,
     include: {
-      _count: { select: { interviews: true } },
+      _count: { select: { interviews: true, jobs: true } },
       interviews: {
         select: {
           year: true,
@@ -85,7 +88,11 @@ async function FeaturedCompaniesRowAsync() {
         },
       },
     },
-    orderBy: { interviews: { _count: "desc" } },
+    orderBy: [
+      { jobs: { _count: "desc" } },
+      { interviews: { _count: "desc" } },
+      { name: "asc" },
+    ],
   });
 
   const featuredCompanies = featuredCompaniesRaw.map((c) => {
@@ -106,6 +113,8 @@ async function FeaturedCompaniesRowAsync() {
       description: c.description,
       websiteUrl: c.websiteUrl,
       interviewCount: c._count.interviews,
+      jobCount: c._count.jobs,
+      hasIntelligence: c._count.jobs > 0,
       roleLevelsCovered: Array.from(levelsMap.values()),
       mostRecentYear: maxYear > 0 ? maxYear : null,
       ctc: c.ctc,

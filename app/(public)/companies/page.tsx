@@ -21,7 +21,6 @@ interface CompaniesPageProps {
   searchParams: Promise<{
     q?: string;
     roleLevel?: string;
-    year?: string;
     cursor?: string;
     branch?: string;
     cgpaMin?: string;
@@ -51,7 +50,6 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
 
       <CompaniesFilterBar
         roleLevels={filterMetadata.roleLevels}
-        years={filterMetadata.years}
         showProfileFilter={showProfileFilter}
       />
 
@@ -76,7 +74,6 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
   const params = await searchParams;
   const q = params.q || "";
   const roleLevelParam = params.roleLevel || "";
-  const yearParam = params.year || "";
   const cursor = params.cursor || "";
   const branchParam = params.branch || "";
   const cgpaMin = params.cgpaMin ? Number(params.cgpaMin) : undefined;
@@ -85,7 +82,6 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
   const ctcMax = params.ctcMax ? Number(params.ctcMax) : undefined;
 
   const selectedLevels = roleLevelParam.split(",").filter(Boolean);
-  const selectedYears = yearParam.split(",").map(Number).filter(Boolean);
   const selectedBranches = branchParam.split(",").filter(Boolean);
 
   const limit = 9;
@@ -98,7 +94,6 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
   const { companies, nextCursor } = await getCompaniesList({
     q,
     roleLevels: selectedLevels,
-    years: selectedYears,
     branches: selectedBranches,
     cgpaMin: Number.isFinite(cgpaMin) ? cgpaMin : undefined,
     cgpaMax: Number.isFinite(cgpaMax) ? cgpaMax : undefined,
@@ -113,7 +108,6 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
     const urlParams = new URLSearchParams();
     if (q) urlParams.set("q", q);
     if (roleLevelParam) urlParams.set("roleLevel", roleLevelParam);
-    if (yearParam) urlParams.set("year", yearParam);
     if (branchParam) urlParams.set("branch", branchParam);
     if (cgpaMin != null) urlParams.set("cgpaMin", String(cgpaMin));
     if (cgpaMax != null) urlParams.set("cgpaMax", String(cgpaMax));
@@ -127,7 +121,7 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
     return (
       <EmptyState
         title="No Companies Match Filters"
-        description="Try broadening your name search, clearing checked role levels, or exploring different interview years."
+        description="Try broadening your name search or clearing checked role levels."
         icon={Building2}
       />
     );

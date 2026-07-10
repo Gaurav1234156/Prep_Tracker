@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { signIn } from "@/app/_actions/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,8 +37,13 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function LoginForm() {
-  const searchParams = useSearchParams();
+type Props = {
+  next: string | null;
+  authError: string | null;
+};
+
+export function LoginForm({ next, authError }: Props) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
 
@@ -46,20 +52,29 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   });
 
+  useEffect(() => {
+    if (authError) {
+      toast.error(authError);
+    }
+  }, [authError]);
+
   async function onSubmit(values: FormValues) {
     setSubmitting(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword(values);
-
-      if (error) {
-        toast.error(error.message);
+      const result = await signIn(values, next);
+      if (result?.error) {
+        toast.error(result.error);
         return;
       }
-
-      toast.success("Signed in.");
-      const next = searchParams.get("next") ?? "/dashboard";
-      window.location.href = next;
+      if (result?.redirectTo) {
+        // Replace history so browser Back won't return to this login page.
+        router.replace(result.redirectTo);
+        router.refresh();
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong.";
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -69,8 +84,8 @@ export function LoginForm() {
     setOauthLoading(true);
     try {
       const supabase = createClient();
-      const next = searchParams.get("next") ?? "/dashboard";
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+      const destination = next ?? "/dashboard";
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },
@@ -128,8 +143,9 @@ export function LoginForm() {
                     <FormControl>
                       <Input
                         type="email"
-                        autoComplete="email"
+                        autoComplete="username"
                         placeholder="you@example.com"
+                        suppressHydrationWarning
                         {...field}
                       />
                     </FormControl>
@@ -147,6 +163,7 @@ export function LoginForm() {
                       <Input
                         type="password"
                         autoComplete="current-password"
+                        suppressHydrationWarning
                         {...field}
                       />
                     </FormControl>

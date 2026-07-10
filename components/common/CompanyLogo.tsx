@@ -37,6 +37,7 @@ function inferDomain(name: string, website?: string | null): string | null {
 type Props = {
   name: string;
   website?: string | null;
+  logoUrl?: string | null;
   size?: Size;
   className?: string;
   /** Render-on-dark-bg variant — initial fallback uses translucent white instead of brand-subtle. */
@@ -46,6 +47,7 @@ type Props = {
 export function CompanyLogo({
   name,
   website,
+  logoUrl,
   size = "md",
   className,
   onDark = false,
@@ -54,8 +56,14 @@ export function CompanyLogo({
   const domain = inferDomain(name, website);
   const dim = SIZE_MAP[size];
   const initial = name.trim().charAt(0).toUpperCase() || "?";
+  const src =
+    logoUrl && !errored
+      ? logoUrl
+      : domain && !errored
+        ? `https://img.logo.dev/${domain}?token=${LOGO_DEV_TOKEN}&size=${dim.px * 2}&format=png`
+        : null;
 
-  if (!domain || errored) {
+  if (!src) {
     return (
       <div
         className={cn(
@@ -73,8 +81,6 @@ export function CompanyLogo({
       </div>
     );
   }
-
-  const src = `https://img.logo.dev/${domain}?token=${LOGO_DEV_TOKEN}&size=${dim.px * 2}&format=png`;
 
   return (
     <div

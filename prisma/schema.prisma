@@ -74,6 +74,12 @@ enum SubmissionStatus {
   REJECTED
 }
 
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
 // ============ CORE ============
 
 model Company {
@@ -85,11 +91,44 @@ model Company {
   description String?
   createdAt   DateTime    @default(now())
   interviews  Interview[]
+  jobs        Job[]
+  intelligenceViews IntelligenceView[]
   ctcJson     Json?
   ctc         Float?
+  ctcMin      Float?
+  ctcMax      Float?
 
   @@index([slug])
   @@index([ctc])
+  @@index([ctcMin])
+  @@index([ctcMax])
+}
+
+model Job {
+  id               String      @id @default(cuid())
+  externalJobId    String      @unique
+  company          Company     @relation(fields: [companyId], references: [id])
+  companyId        String
+  role             String
+  techStack        String?
+  optionalSkills   String?
+  ctcMin           Float?
+  ctcMax           Float?
+  openings         Int?
+  location         String?
+  jobType          String?
+  product          String?
+  hubspotUrl       String?
+  sourceCategory   String?
+  enteredBy        String?
+  enteredAt        DateTime?
+  interviewProcess String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  interviews       Interview[]
+
+  @@index([companyId])
+  @@index([role])
 }
 
 model RoleLevel {
@@ -104,6 +143,8 @@ model Interview {
   id                  String     @id @default(cuid())
   company             Company    @relation(fields: [companyId], references: [id])
   companyId           String
+  job                 Job?       @relation(fields: [jobId], references: [id])
+  jobId               String?    @unique
   role                String
   roleLevel           RoleLevel  @relation(fields: [roleLevelId], references: [id])
   roleLevelId         String
@@ -114,6 +155,9 @@ model Interview {
   candidateBranch     Branch?
   candidateGradYear   Int?
   candidateBackground String?
+  sourceCategory      String?
+  externalSource      String?
+  interviewProcess    String?
   publishedAt         DateTime   @default(now())
   createdBy           User       @relation(fields: [createdById], references: [id])
   createdById         String
@@ -128,21 +172,26 @@ model Interview {
   @@index([year])
   @@index([publishedAt])
   @@index([candidateBranch])
+  @@index([jobId])
 }
 
 model Round {
-  id              String           @id @default(cuid())
-  interview       Interview        @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  interviewId     String
-  roundNumber     Int
-  roundName       String
-  roundType       RoundType
-  durationMinutes Int?
-  mode            InterviewMode
-  numInterviewers Int?
-  interviewStyle  String?
-  outcome         RoundOutcome
-  keyLearnings    String?
+  id                String           @id @default(cuid())
+  interview         Interview        @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  interviewId       String
+  roundNumber       Int
+  roundName         String
+  roundType         RoundType
+  durationMinutes   Int?
+  mode              InterviewMode
+  numInterviewers   Int?
+  interviewStyle    String?
+  outcome           RoundOutcome
+  keyLearnings      String?
+  assessmentPattern String?
+  pocRemarks        String?
+  recordingUrl      String?
+  transcriptUrl     String?
 
   topicCoverages  TopicCoverage[]
   assets          Asset[]
@@ -205,9 +254,14 @@ model SubTopicEntry {
   orderIndex         Int           @default(0)
   exactQuestionText  String?
   referenceUrl       String?
+  externalQuestionId String?       @unique
+  questionType       String?
+  difficulty         Difficulty?
+  skillsAssessed     String?
 
   @@index([topicCoverageId, orderIndex])
   @@index([subTopicId])
+  @@index([difficulty])
 }
 
 // ============ ASSETS ============
@@ -244,6 +298,21 @@ model User {
   bookmarks    Bookmark[]
   importBatches ImportBatch[]
   submissions  ExperienceSubmission[]
+  intelligenceViews IntelligenceView[]
+}
+
+model IntelligenceView {
+  id        String   @id @default(cuid())
+  userId    String
+  companyId String
+  viewDate  DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId, viewDate])
+  @@index([userId, viewDate])
 }
 
 // ============ STUDENT-SUBMITTED EXPERIENCES ============

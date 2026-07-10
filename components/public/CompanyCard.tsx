@@ -18,6 +18,10 @@ interface CompanyCardProps {
     roleLevelsCovered: { id: string; name: string; slug: string }[];
     mostRecentYear?: number | null;
     ctc?: number | null;
+    ctcMin?: number | null;
+    ctcMax?: number | null;
+    hasIntelligence?: boolean;
+    jobCount?: number;
   };
   /** When true, renders an admin-only delete control over the card. */
   canManage?: boolean;
@@ -49,6 +53,7 @@ export function CompanyCard({ company, canManage = false }: CompanyCardProps) {
           <CompanyLogo
             name={company.name}
             website={company.websiteUrl}
+            logoUrl={company.logoUrl}
             size="md"
           />
           <div className="min-w-0">
@@ -62,7 +67,17 @@ export function CompanyCard({ company, canManage = false }: CompanyCardProps) {
                   Active: {company.mostRecentYear}
                 </span>
               ) : null}
-              {company.ctc != null ? (
+              {company.ctcMin != null || company.ctcMax != null ? (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                  <span className="text-brand font-bold">CTC:</span>{" "}
+                  {company.ctcMin != null &&
+                  company.ctcMax != null &&
+                  company.ctcMin !== company.ctcMax
+                    ? `${company.ctcMin}–${company.ctcMax}`
+                    : (company.ctcMin ?? company.ctcMax)}{" "}
+                  LPA
+                </span>
+              ) : company.ctc != null ? (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
                   <span className="text-brand font-bold">CTC:</span> {company.ctc} LPA
                 </span>
@@ -85,6 +100,14 @@ export function CompanyCard({ company, canManage = false }: CompanyCardProps) {
       </div>
 
       <div className="mt-6 space-y-3 border-t border-border pt-4">
+        {company.hasIntelligence ? (
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="outline" className="text-primary border-primary/30">
+              Hiring intel
+            </Badge>
+          </div>
+        ) : null}
+
         {company.roleLevelsCovered.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {company.roleLevelsCovered.slice(0, 3).map((level) => (
