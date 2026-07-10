@@ -83,6 +83,11 @@ export async function checkCompanyAccess(
   const viewDate = getTodayDateIST();
 
   return prisma.$transaction(async (tx) => {
+    // Serialize concurrent unlocks for the same user/day.
+    await tx.$executeRaw(
+      Prisma.sql`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`,
+    );
+
     const todaysViews = await tx.intelligenceView.findMany({
       where: { userId, viewDate },
       select: { companyId: true },

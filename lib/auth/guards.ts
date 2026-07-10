@@ -40,7 +40,9 @@ export const getCurrentDbUser = cache(
     try {
       return await ensureDbUser(authUser);
     } catch {
-      return null;
+      return await prisma.user.findUnique({
+        where: { email: authUser.email },
+      });
     }
   },
 );

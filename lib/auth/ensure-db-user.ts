@@ -1,5 +1,6 @@
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 
@@ -28,12 +29,25 @@ export async function ensureDbUser(authUser: SupabaseUser): Promise<User> {
   if (existing) return existing;
 
   const { name, avatarUrl } = extractAuthProfile(authUser);
-  return prisma.user.create({
-    data: {
-      email: authUser.email!,
-      name,
-      avatarUrl,
-      role: "STUDENT",
-    },
-  });
+  try {
+    return await prisma.user.create({
+      data: {
+        email: authUser.email!,
+        name,
+        avatarUrl,
+        role: "STUDENT",
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      const raced = await prisma.user.findUnique({
+        where: { email: authUser.email! },
+      });
+      if (raced) return raced;
+    }
+    throw error;
+  }
 }
