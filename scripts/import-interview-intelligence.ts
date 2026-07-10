@@ -421,21 +421,42 @@ async function importJob(
             },
           });
         } else {
-          const orderIndex = await tx.subTopicEntry.count({
-            where: { topicCoverageId: coverageId },
-          });
-          await tx.subTopicEntry.create({
-            data: {
+          const existing = await tx.subTopicEntry.findFirst({
+            where: {
               topicCoverageId: coverageId,
               subTopicId,
-              orderIndex,
+              externalQuestionId: null,
               exactQuestionText: questionText,
               referenceUrl,
-              questionType: row.questionType || null,
-              difficulty,
-              skillsAssessed: row.skillsAssessed || null,
             },
+            select: { id: true },
           });
+          if (existing) {
+            await tx.subTopicEntry.update({
+              where: { id: existing.id },
+              data: {
+                questionType: row.questionType || null,
+                difficulty,
+                skillsAssessed: row.skillsAssessed || null,
+              },
+            });
+          } else {
+            const orderIndex = await tx.subTopicEntry.count({
+              where: { topicCoverageId: coverageId },
+            });
+            await tx.subTopicEntry.create({
+              data: {
+                topicCoverageId: coverageId,
+                subTopicId,
+                orderIndex,
+                exactQuestionText: questionText,
+                referenceUrl,
+                questionType: row.questionType || null,
+                difficulty,
+                skillsAssessed: row.skillsAssessed || null,
+              },
+            });
+          }
         }
       }
 
