@@ -12,6 +12,10 @@ import {
 } from "@/lib/intelligence/messages";
 import { prisma } from "@/lib/db";
 import { fetchInterviewDetail } from "@/lib/queries/interview-detail";
+import {
+  FEATURE_FLAG_KEYS,
+  isFeatureEnabled,
+} from "@/lib/feature-flags";
 
 interface GatedExperienceContentProps {
   interviewId: string;
@@ -105,13 +109,14 @@ export async function GatedExperienceContent({
     );
   }
 
-  const [interview, bookmark] = await Promise.all([
+  const [interview, bookmark, bookmarksEnabled] = await Promise.all([
     fetchInterviewDetail(interviewId),
     prisma.bookmark.findUnique({
       where: {
         userId_interviewId: { userId: user.id, interviewId },
       },
     }),
+    isFeatureEnabled(FEATURE_FLAG_KEYS.STUDENT_BOOKMARKS),
   ]);
 
   if (!interview) notFound();
@@ -121,6 +126,7 @@ export async function GatedExperienceContent({
       interview={interview}
       bookmarked={!!bookmark}
       remaining={access.remaining}
+      showBookmark={bookmarksEnabled}
     />
   );
 }

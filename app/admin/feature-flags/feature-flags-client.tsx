@@ -6,10 +6,12 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   toggleFeatureFlag,
   updateFeatureFlagDescription,
 } from "@/app/_actions/feature-flags";
+import { isFlagWired } from "@/lib/feature-flags.constants";
 
 type Flag = {
   key: string;
@@ -20,15 +22,19 @@ type Flag = {
 
 export function FeatureFlagsClient({ initialFlags }: { initialFlags: Flag[] }) {
   const [flags, setFlags] = useState<Flag[]>(initialFlags);
-  const [pending, startTransition] = useTransition();
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   function setFlagLocal(key: string, patch: Partial<Flag>) {
     setFlags((prev) => prev.map((f) => (f.key === key ? { ...f, ...patch } : f)));
   }
 
   async function handleToggle(flag: Flag) {
+    if (!isFlagWired(flag.key)) return;
+
     const nextValue = !flag.enabled;
     setFlagLocal(flag.key, { enabled: nextValue });
+    setPendingKey(flag.key);
     startTransition(async () => {
       try {
         await toggleFeatureFlag({ key: flag.key, enabled: nextValue });
@@ -36,12 +42,15 @@ export function FeatureFlagsClient({ initialFlags }: { initialFlags: Flag[] }) {
       } catch {
         setFlagLocal(flag.key, { enabled: flag.enabled });
         toast.error("Could not toggle flag.");
+      } finally {
+        setPendingKey(null);
       }
     });
   }
 
   async function handleSaveDescription(flag: Flag, value: string) {
     if ((flag.description ?? "") === value) return;
+    setPendingKey(flag.key);
     startTransition(async () => {
       try {
         await updateFeatureFlagDescription({
@@ -52,6 +61,8 @@ export function FeatureFlagsClient({ initialFlags }: { initialFlags: Flag[] }) {
         toast.success("Description saved.");
       } catch {
         toast.error("Could not save description.");
+      } finally {
+        setPendingKey(null);
       }
     });
   }
@@ -70,7 +81,8 @@ export function FeatureFlagsClient({ initialFlags }: { initialFlags: Flag[] }) {
         <FlagRow
           key={flag.key}
           flag={flag}
-          pending={pending}
+          pending={pendingKey === flag.key}
+          wired={isFlagWired(flag.key)}
           onToggle={() => handleToggle(flag)}
           onSaveDescription={(value) => handleSaveDescription(flag, value)}
         />
@@ -82,11 +94,13 @@ export function FeatureFlagsClient({ initialFlags }: { initialFlags: Flag[] }) {
 function FlagRow({
   flag,
   pending,
+  wired,
   onToggle,
   onSaveDescription,
 }: {
   flag: Flag;
   pending: boolean;
+  wired: boolean;
   onToggle: () => void;
   onSaveDescription: (value: string) => void;
 }) {
@@ -96,16 +110,28 @@ function FlagRow({
     <Card className="gap-3">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1 min-w-0">
-          <code className="text-sm font-mono font-medium text-foreground">
-            {flag.key}
-          </code>
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="text-sm font-mono font-medium text-foreground">
+              {flag.key}
+            </code>
+            {!wired ? (
+              <Badge variant="secondary" className="text-xs">
+                Not wired
+              </Badge>
+            ) : null}
+          </div>
           <p className="text-xs text-muted-foreground">
             Last updated {new Date(flag.updatedAt).toLocaleString()}
           </p>
+          {!wired ? (
+            <p className="text-xs text-muted-foreground">
+              Toggle is saved, but no feature reads this flag yet.
+            </p>
+          ) : null}
         </div>
         <ToggleSwitch
           checked={flag.enabled}
-          disabled={pending}
+          disabled={pending || !wired}
           onChange={onToggle}
           label={`Toggle ${flag.key}`}
         />

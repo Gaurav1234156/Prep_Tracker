@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/db";
 import { requireAdminOrPanelist } from "@/lib/auth/guards";
+import { FEATURE_FLAG_KEYS } from "@/lib/feature-flags.constants";
 
 const toggleSchema = z.object({
   key: z.string().min(1),
@@ -26,6 +27,9 @@ export async function toggleFeatureFlag(
   revalidateTag("feature-flags");
   revalidatePath("/admin/feature-flags");
   revalidatePath("/companies");
+  if (key === FEATURE_FLAG_KEYS.STUDENT_BOOKMARKS) {
+    revalidatePath("/dashboard");
+  }
   return { ok: true } as const;
 }
 
@@ -43,6 +47,7 @@ export async function updateFeatureFlagDescription(
     where: { key },
     data: { description },
   });
+  revalidateTag("feature-flags");
   revalidatePath("/admin/feature-flags");
   return { ok: true } as const;
 }

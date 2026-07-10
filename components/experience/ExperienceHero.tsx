@@ -8,10 +8,12 @@ export function ExperienceHero({
   interview,
   bookmarked = false,
   isAuthenticated = false,
+  showBookmark = true,
 }: {
   interview: InterviewDetail;
   bookmarked?: boolean;
   isAuthenticated?: boolean;
+  showBookmark?: boolean;
 }) {
   const { company, role, roleLevel, year, totalSelected } = interview;
 
@@ -117,13 +119,15 @@ export function ExperienceHero({
             </div>
           </div>
 
-          <div className="shrink-0 md:self-start">
-            <BookmarkButton
-              interviewId={interview.id}
-              initialBookmarked={bookmarked}
-              isAuthenticated={isAuthenticated}
-            />
-          </div>
+          {showBookmark ? (
+            <div className="shrink-0 md:self-start">
+              <BookmarkButton
+                interviewId={interview.id}
+                initialBookmarked={bookmarked}
+                isAuthenticated={isAuthenticated}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </header>

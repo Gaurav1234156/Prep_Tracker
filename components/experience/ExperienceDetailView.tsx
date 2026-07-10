@@ -29,12 +29,14 @@ interface ExperienceDetailViewProps {
   interview: InterviewDetail;
   bookmarked: boolean;
   remaining: number | null;
+  showBookmark?: boolean;
 }
 
 export function ExperienceDetailView({
   interview,
   bookmarked,
   remaining,
+  showBookmark = true,
 }: ExperienceDetailViewProps) {
   return (
     <article className="min-h-screen bg-background pb-20 font-sans antialiased text-foreground selection:bg-primary/10 selection:text-primary">
@@ -48,6 +50,7 @@ export function ExperienceDetailView({
         interview={interview}
         bookmarked={bookmarked}
         isAuthenticated
+        showBookmark={showBookmark}
       />
       <div className="container mx-auto max-w-6xl px-4 py-8 space-y-10">
         <ProcessStepper rounds={interview.rounds} />

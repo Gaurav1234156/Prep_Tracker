@@ -1,4 +1,5 @@
-import { getCompaniesList, getFilterMetadata, getFeatureFlag } from "@/lib/queries/companies-list";
+import { getCompaniesList, getFilterMetadata } from "@/lib/queries/companies-list";
+import { FEATURE_FLAG_KEYS, getFeatureFlag } from "@/lib/feature-flags";
 import { CompaniesFilterBar } from "@/components/public/CompaniesFilterBar";
 import { CompanyCard } from "@/components/public/CompanyCard";
 import { EmptyState } from "@/components/public/EmptyState";
@@ -33,7 +34,7 @@ interface CompaniesPageProps {
 export default async function CompaniesPage({ searchParams }: CompaniesPageProps) {
   const [filterMetadata, profileFilterFlag] = await Promise.all([
     getFilterMetadata(),
-    getFeatureFlag("show_candidate_profile_filter"),
+    getFeatureFlag(FEATURE_FLAG_KEYS.SHOW_CANDIDATE_PROFILE_FILTER),
   ]);
   const showProfileFilter = profileFilterFlag?.enabled ?? false;
 
@@ -63,21 +64,29 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
           </div>
         </div>
       }>
-        <CompaniesListContainer searchParams={searchParams} />
+        <CompaniesListContainer
+          searchParams={searchParams}
+          showProfileFilter={showProfileFilter}
+        />
       </Suspense>
 
     </div>
   );
 }
 
-async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
+async function CompaniesListContainer({
+  searchParams,
+  showProfileFilter,
+}: CompaniesPageProps & { showProfileFilter: boolean }) {
   const params = await searchParams;
   const q = params.q || "";
   const roleLevelParam = params.roleLevel || "";
   const cursor = params.cursor || "";
-  const branchParam = params.branch || "";
-  const cgpaMin = params.cgpaMin ? Number(params.cgpaMin) : undefined;
-  const cgpaMax = params.cgpaMax ? Number(params.cgpaMax) : undefined;
+  const branchParam = showProfileFilter ? params.branch || "" : "";
+  const cgpaMin =
+    showProfileFilter && params.cgpaMin ? Number(params.cgpaMin) : undefined;
+  const cgpaMax =
+    showProfileFilter && params.cgpaMax ? Number(params.cgpaMax) : undefined;
   const ctcMin = params.ctcMin ? Number(params.ctcMin) : undefined;
   const ctcMax = params.ctcMax ? Number(params.ctcMax) : undefined;
 
@@ -108,9 +117,13 @@ async function CompaniesListContainer({ searchParams }: CompaniesPageProps) {
     const urlParams = new URLSearchParams();
     if (q) urlParams.set("q", q);
     if (roleLevelParam) urlParams.set("roleLevel", roleLevelParam);
-    if (branchParam) urlParams.set("branch", branchParam);
-    if (cgpaMin != null) urlParams.set("cgpaMin", String(cgpaMin));
-    if (cgpaMax != null) urlParams.set("cgpaMax", String(cgpaMax));
+    if (showProfileFilter && branchParam) urlParams.set("branch", branchParam);
+    if (showProfileFilter && cgpaMin != null) {
+      urlParams.set("cgpaMin", String(cgpaMin));
+    }
+    if (showProfileFilter && cgpaMax != null) {
+      urlParams.set("cgpaMax", String(cgpaMax));
+    }
     if (ctcMin != null) urlParams.set("ctcMin", String(ctcMin));
     if (ctcMax != null) urlParams.set("ctcMax", String(ctcMax));
     if (newCursor) urlParams.set("cursor", newCursor);

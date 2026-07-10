@@ -183,11 +183,4 @@ export const getFilterMetadata = unstable_cache(
   { revalidate: 300, tags: ["filter-metadata"] },
 );
 
-// Feature flags rarely change; cache so the flag read drops out of the hot path.
-// Invalidated immediately by toggleFeatureFlag() via revalidateTag("feature-flags").
-export const getFeatureFlag = (key: string) =>
-  unstable_cache(
-    async () => prisma.featureFlag.findUnique({ where: { key } }),
-    ["feature-flag", key],
-    { revalidate: 300, tags: ["feature-flags"] },
-  )();
+export { getFeatureFlag } from "@/lib/feature-flags";
