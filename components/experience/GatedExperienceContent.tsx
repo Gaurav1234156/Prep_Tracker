@@ -6,6 +6,10 @@ import type { ReactNode } from "react";
 import { ExperienceDetailView } from "@/components/experience/ExperienceDetailView";
 import { getCurrentDbUser } from "@/lib/auth/guards";
 import { checkCompanyAccess } from "@/lib/intelligence/access";
+import {
+  DAILY_LIMIT_REACHED_DESCRIPTION_EXPERIENCE,
+  DAILY_LIMIT_REACHED_TITLE,
+} from "@/lib/intelligence/messages";
 import { prisma } from "@/lib/db";
 import { fetchInterviewDetail } from "@/lib/queries/interview-detail";
 
@@ -87,8 +91,8 @@ export async function GatedExperienceContent({
   if (!access.allowed) {
     return (
       <ExperienceGateCard
-        title="You've viewed 2 companies today"
-        description="Your daily company content limit resets at midnight IST. Visit this company's page tomorrow or explore companies you've already unlocked today."
+        title={DAILY_LIMIT_REACHED_TITLE}
+        description={DAILY_LIMIT_REACHED_DESCRIPTION_EXPERIENCE}
         action={
           <Link
             href={`/companies/${companySlug}`}

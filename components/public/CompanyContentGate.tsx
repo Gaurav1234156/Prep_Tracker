@@ -7,6 +7,10 @@ import { Lock, TrendingUp } from "lucide-react";
 import { CompanyIntelligencePanel } from "@/components/public/CompanyIntelligencePanel";
 import { CompanyTabs } from "@/components/public/CompanyTabs";
 import { Button } from "@/components/ui/button";
+import {
+  DAILY_LIMIT_REACHED_DESCRIPTION_COMPANY,
+  DAILY_LIMIT_REACHED_TITLE,
+} from "@/lib/intelligence/messages";
 import type { CompanyIntelligence } from "@/lib/queries/company-intelligence";
 import type { CompanyTabInterview } from "@/lib/queries/company-content";
 
@@ -154,8 +158,8 @@ export function CompanyContentGate({
   if (state.status === "daily_limit_reached") {
     return (
       <ContentGateCard
-        title="You've viewed 2 companies today"
-        description="Your daily company content limit resets at midnight IST. Come back tomorrow to explore more companies."
+        title={DAILY_LIMIT_REACHED_TITLE}
+        description={DAILY_LIMIT_REACHED_DESCRIPTION_COMPANY}
       />
     );
   }
