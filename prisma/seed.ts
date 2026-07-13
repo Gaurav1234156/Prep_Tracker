@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { ROLE_LEVEL_NAMES } from "../lib/constants/role-levels";
 import { slugify } from "../lib/slug";
 
 const prisma = new PrismaClient();
@@ -228,23 +229,8 @@ const FLAGS: Array<{ key: string; enabled: boolean; description: string }> = [
   },
 ];
 
-const ROLE_LEVELS = [
-  "Intern",
-  "SDE-1",
-  "SDE-2",
-  "SDE-3",
-  "Frontend Intern",
-  "Frontend SDE",
-  "Backend Intern",
-  "Backend SDE",
-  "Fullstack",
-  "Data Engineer",
-  "ML Engineer",
-  "Other",
-];
-
 async function seedRoleLevels() {
-  for (const name of ROLE_LEVELS) {
+  for (const name of ROLE_LEVEL_NAMES) {
     const slug = slugify(name);
     await prisma.roleLevel.upsert({
       where: { name },
@@ -252,7 +238,7 @@ async function seedRoleLevels() {
       create: { name, slug },
     });
   }
-  return ROLE_LEVELS.length;
+  return ROLE_LEVEL_NAMES.length;
 }
 
 async function seedCompanies() {

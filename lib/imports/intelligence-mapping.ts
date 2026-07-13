@@ -3,6 +3,10 @@ import type {
   InterviewMode,
   RoundType,
 } from "@prisma/client";
+import {
+  isRoleLevelName,
+  type RoleLevelName,
+} from "@/lib/constants/role-levels";
 
 const SKILL_TO_TOPIC_AREA: Record<string, string> = {
   APTITUDE: "Core CS",
@@ -142,20 +146,64 @@ export function mapSubTopicName(
   return "General";
 }
 
-export function inferRoleLevel(role: string): string {
-  const upper = role.toUpperCase();
-  if (upper.includes("INTERN")) return "Intern";
-  if (upper.includes("SDE-3") || upper.includes("SENIOR")) return "SDE-3";
-  if (upper.includes("SDE-2")) return "SDE-2";
-  if (upper.includes("SDE-1") || upper.includes("JUNIOR")) return "SDE-1";
+export function inferRoleLevel(role: string): RoleLevelName {
+  const upper = role.trim().toUpperCase();
+  if (!upper) return "Other";
+
+  const hasIntern = upper.includes("INTERN");
+  const hasBackend = upper.includes("BACKEND");
+  const hasFrontend = upper.includes("FRONTEND");
+
+  if (hasBackend && hasIntern) return "Backend Intern";
+  if (hasFrontend && hasIntern) return "Frontend Intern";
+  if (hasBackend) return "Backend SDE";
+  if (hasFrontend) return "Frontend SDE";
+
+  if (
+    upper.includes("SDE-3") ||
+    upper.includes("SDE 3") ||
+    upper.includes("SENIOR")
+  ) {
+    return "SDE-3";
+  }
+  if (upper.includes("SDE-2") || upper.includes("SDE 2")) {
+    return "SDE-2";
+  }
+  if (
+    !hasIntern &&
+    (upper.includes("SDE-1") ||
+      upper.includes("SDE 1") ||
+      upper.includes("JUNIOR") ||
+      /\bSDE\b/.test(upper))
+  ) {
+    return "SDE-1";
+  }
+
   if (upper.includes("DATA ENGINEER")) return "Data Engineer";
-  if (upper.includes("ML") || upper.includes("AI")) return "ML Engineer";
+
+  if (
+    upper.includes("ML ENGINEER") ||
+    upper.includes("MACHINE LEARNING") ||
+    upper.includes("AI/ML") ||
+    upper.includes("AI ML")
+  ) {
+    return "ML Engineer";
+  }
+
   if (upper.includes("FULL STACK") || upper.includes("FULLSTACK")) {
     return "Fullstack";
   }
-  if (upper.includes("FRONTEND")) return "Frontend SDE";
-  if (upper.includes("BACKEND")) return "Backend SDE";
+
+  if (hasIntern) return "Intern";
+
   return "Other";
+}
+
+export function assertRoleLevelName(name: string): RoleLevelName {
+  if (!isRoleLevelName(name)) {
+    throw new Error(`Invalid role level name: ${name}`);
+  }
+  return name;
 }
 
 export function parseExcelDate(raw: string): Date | null {
