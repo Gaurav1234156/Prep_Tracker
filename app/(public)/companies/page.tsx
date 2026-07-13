@@ -1,8 +1,13 @@
 import { getCompaniesList, getFilterMetadata } from "@/lib/queries/companies-list";
+import {
+  buildFilterSummaryText,
+  getFilteredRoleIntelligence,
+} from "@/lib/queries/filtered-role-intelligence";
 import { FEATURE_FLAG_KEYS, getFeatureFlag } from "@/lib/feature-flags";
 import { CompaniesFilterBar } from "@/components/public/CompaniesFilterBar";
 import { CompanyCard } from "@/components/public/CompanyCard";
 import { EmptyState } from "@/components/public/EmptyState";
+import { RoleFilterSummary } from "@/components/public/RoleFilterSummary";
 import { Building2, ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -112,6 +117,19 @@ async function CompaniesListContainer({
     limit,
   });
 
+  const intelligence =
+    selectedLevels.length > 0
+      ? await getFilteredRoleIntelligence({
+          roleLevelIds: selectedLevels,
+          ctcMin: Number.isFinite(ctcMin) ? ctcMin : undefined,
+          ctcMax: Number.isFinite(ctcMax) ? ctcMax : undefined,
+        })
+      : null;
+  const summaryLines =
+    intelligence && intelligence.interviewCount > 0
+      ? buildFilterSummaryText(intelligence)
+      : [];
+
   // Construct page links for next/prev paging
   const buildPageUrl = (newCursor: string | null) => {
     const urlParams = new URLSearchParams();
@@ -142,6 +160,7 @@ async function CompaniesListContainer({
 
   return (
     <div className="space-y-10">
+      {summaryLines.length > 0 && <RoleFilterSummary lines={summaryLines} />}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {companies.map((company) => (
           <div key={company.id} className="h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
