@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, Link as LinkIcon, FileText } from "lucide-react";
@@ -32,6 +32,14 @@ function getTopicAreaBorder(slug: string) {
   return TOPIC_AREA_COLORS[slug] || "border-l-primary";
 }
 
+function hasEntryDetails(entry: TopicCoverage["entries"][number]) {
+  return !!(
+    entry.exactQuestionText ||
+    entry.referenceUrl ||
+    entry.difficulty
+  );
+}
+
 function getDifficultyStyles(difficulty: string | null | undefined) {
   switch (difficulty) {
     case "EASY":
@@ -48,12 +56,55 @@ function getDifficultyStyles(difficulty: string | null | undefined) {
 export function SubTopicEntriesList({ coverages }: { coverages: TopicCoverage[] }) {
   const [expandedEntries, setExpandedEntries] = useState<Record<string, boolean>>({});
 
+  const expandableEntryIds = useMemo(
+    () =>
+      coverages.flatMap((cov) =>
+        cov.entries.filter(hasEntryDetails).map((entry) => entry.id),
+      ),
+    [coverages],
+  );
+
+  const allExpanded =
+    expandableEntryIds.length > 0 &&
+    expandableEntryIds.every((id) => expandedEntries[id]);
+
   const toggleEntry = (id: string) => {
     setExpandedEntries((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const toggleAllEntries = () => {
+    if (allExpanded) {
+      setExpandedEntries({});
+    } else {
+      setExpandedEntries(
+        Object.fromEntries(expandableEntryIds.map((id) => [id, true])),
+      );
+    }
+  };
+
   return (
     <div className="pl-0 md:pl-6 border-l-0 md:border-l border-border space-y-4">
+      {expandableEntryIds.length > 0 && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={toggleAllEntries}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] uppercase tracking-wider font-extrabold border transition-all cursor-pointer",
+              allExpanded
+                ? "bg-foreground text-background border-foreground shadow-sm"
+                : "bg-card hover:bg-secondary text-foreground border-border",
+            )}
+          >
+            {allExpanded ? "Collapse all questions" : "Expand all questions"}
+            {allExpanded ? (
+              <ChevronUp className="size-3 ml-0.5" />
+            ) : (
+              <ChevronDown className="size-3 ml-0.5" />
+            )}
+          </button>
+        </div>
+      )}
       {coverages.map((cov, covIdx) => {
         const borderClass = getTopicAreaBorder(cov.topicArea.slug);
         return (
@@ -74,11 +125,7 @@ export function SubTopicEntriesList({ coverages }: { coverages: TopicCoverage[] 
               ) : (
                 <div className="flex flex-wrap gap-2 pt-1">
                   {cov.entries.map((entry) => {
-                    const hasDetails = !!(
-                      entry.exactQuestionText ||
-                      entry.referenceUrl ||
-                      entry.difficulty
-                    );
+                    const hasDetails = hasEntryDetails(entry);
                     const isExpanded = !!expandedEntries[entry.id];
                     
                     return (
