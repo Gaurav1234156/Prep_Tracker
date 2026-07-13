@@ -1,6 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/** Paths reachable without a Supabase session. */
+function isAnonymousAllowedPath(path: string): boolean {
+  return (
+    path === "/login" ||
+    path === "/signup" ||
+    path.startsWith("/auth/")
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -32,10 +41,15 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isAdminPath = path.startsWith("/admin");
 
-  // Anonymous users on /admin/* → bounce to /login with ?next=
-  if (!user && isAdminPath) {
+  // Anonymous users may only reach auth routes; everything else requires sign-in.
+  if (!user && !isAnonymousAllowedPath(path)) {
+    if (path.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "sign_in_required" },
+        { status: 401 },
+      );
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);

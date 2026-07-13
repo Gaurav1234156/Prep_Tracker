@@ -38,7 +38,11 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function SignupForm() {
+type Props = {
+  next: string | null;
+};
+
+export function SignupForm({ next }: Props) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
@@ -90,7 +94,8 @@ export function SignupForm() {
     setOauthLoading(true);
     try {
       const supabase = createClient();
-      const redirectTo = `${window.location.origin}/auth/callback?next=/dashboard`;
+      const destination = next ?? "/dashboard";
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },
@@ -211,7 +216,10 @@ export function SignupForm() {
         <CardFooter>
           <p className="text-muted-foreground text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="text-foreground underline">
+            <Link
+              href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
+              className="text-foreground underline"
+            >
               Log in
             </Link>
           </p>

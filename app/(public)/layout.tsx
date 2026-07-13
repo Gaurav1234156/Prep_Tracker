@@ -1,11 +1,14 @@
 import { SiteNav } from "@/components/public/SiteNav";
 import { SiteFooter } from "@/components/public/SiteFooter";
+import { requireOnboarded } from "@/lib/auth/guards";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireOnboarded();
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteNav />

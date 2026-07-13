@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+
+import { getApiUser } from "@/lib/auth/guards";
 import { search } from "@/lib/queries/search";
 
 export async function GET(req: NextRequest) {
+  const user = await getApiUser();
+  if (!user) {
+    return NextResponse.json({ error: "sign_in_required" }, { status: 401 });
+  }
+
   const q = req.nextUrl.searchParams.get("q") || "";
   const limit = Number(req.nextUrl.searchParams.get("limit") || 3);
   

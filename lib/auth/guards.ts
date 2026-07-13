@@ -56,6 +56,11 @@ export async function requireSignedIn(): Promise<User> {
   return user;
 }
 
+/** API routes: returns the current user or null (caller responds with 401). */
+export async function getApiUser(): Promise<User | null> {
+  return getCurrentDbUser();
+}
+
 /**
  * Server-component-friendly: redirects unauthenticated visitors to /login,
  * preserving the current path as `?next=` so we can return them after sign-in.
