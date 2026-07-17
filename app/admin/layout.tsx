@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/_actions/auth";
 import { getCurrentDbUser } from "@/lib/auth/guards";
 
+// The admin area is authenticated and data-driven per request. Force dynamic
+// rendering for the whole subtree so pages are never statically prerendered at
+// build time (which would fail when the database is unreachable during build).
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {
