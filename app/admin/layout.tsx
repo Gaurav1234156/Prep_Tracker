@@ -42,6 +42,12 @@ export default async function AdminLayout({
             >
               Submissions
             </Link>
+            <Link
+              href="/admin/assessment-reports"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Assessment Reports
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-muted-foreground text-sm">{user.email}</span>

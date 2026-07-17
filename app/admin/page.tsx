@@ -47,9 +47,11 @@ export default async function AdminPage() {
       where: { status: { in: ["READY_FOR_REVIEW", "FAILED"] } },
     }),
     prisma.job.count(),
-    prisma.assessmentFeedback.count({
-      where: { status: "DRAFT" },
-    }),
+    // Keep the dashboard usable if the AssessmentFeedback migration
+    // has not been applied on this environment yet.
+    prisma.assessmentFeedback
+      .count({ where: { status: "DRAFT" } })
+      .catch(() => 0),
   ]);
 
   const tiles: Tile[] = [
