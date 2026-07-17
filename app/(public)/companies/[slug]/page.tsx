@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 
 import { CompanyLogo } from "@/components/common/CompanyLogo";
 import { CompanyContentGate } from "@/components/public/CompanyContentGate";
+import { CompanyRoleSections } from "@/components/public/CompanyRoleSections";
+import { getConfiguredRolesForCompany } from "@/lib/constants/company-role-assessments";
 
 export const revalidate = 3600; // ISR cache for 1 hour
 
@@ -44,6 +46,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
     where: { slug },
     include: {
       _count: { select: { jobs: true, interviews: true } },
+      jobs: { select: { role: true } },
       interviews: {
         select: {
           year: true,
@@ -72,6 +75,15 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
   });
 
   const uniqueLevels = Array.from(levelsMap.values());
+
+  const roleSet = new Set<string>();
+  for (const job of company.jobs) {
+    if (job.role) roleSet.add(job.role);
+  }
+  for (const role of getConfiguredRolesForCompany(slug)) {
+    roleSet.add(role);
+  }
+  const openRoles = Array.from(roleSet).sort((a, b) => a.localeCompare(b));
 
   return (
     <div>
@@ -194,19 +206,21 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
       </header>
 
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+        <CompanyRoleSections companySlug={slug} roles={openRoles} />
+
         {hasContent ? (
           <CompanyContentGate
             companySlug={slug}
             companyName={company.name}
             hasContent={hasContent}
           />
-        ) : (
+        ) : openRoles.length === 0 ? (
           <EmptyState
             title="No Experiences Logged"
             description={`We don't have any candidate experiences on file for ${company.name} yet. Check back soon or visit other hiring firms.`}
             icon={Building2}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );
