@@ -12,7 +12,7 @@ import {
   type ExplorerItem,
 } from "@/components/public/TopicQuestionExplorer";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

@@ -9,7 +9,7 @@ import { CompanyContentGate } from "@/components/public/CompanyContentGate";
 import { CompanyRoleSections } from "@/components/public/CompanyRoleSections";
 import { getConfiguredRolesForCompany } from "@/lib/constants/company-role-assessments";
 
-export const revalidate = 3600; // ISR cache for 1 hour
+export const dynamic = "force-dynamic";
 
 // Dynamic metadata generation for top-tier SEO indexability
 export async function generateMetadata({
