@@ -60,12 +60,6 @@ export async function SiteNav() {
                 >
                   Topics
                 </Link>
-                <Link
-                  href="/search"
-                  className="rounded-md px-3 py-1.5 text-foreground-muted transition-colors hover:bg-background-subtle hover:text-foreground"
-                >
-                  Search
-                </Link>
               </nav>
             </div>
 
