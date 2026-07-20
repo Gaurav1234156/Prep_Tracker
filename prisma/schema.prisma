@@ -74,11 +74,6 @@ enum SubmissionStatus {
   REJECTED
 }
 
-enum AssessmentFeedbackStatus {
-  DRAFT
-  SENT
-}
-
 enum Difficulty {
   EASY
   MEDIUM
@@ -304,8 +299,6 @@ model User {
   importBatches ImportBatch[]
   submissions  ExperienceSubmission[]
   intelligenceViews IntelligenceView[]
-  assessmentFeedbacksReceived AssessmentFeedback[] @relation("StudentAssessmentFeedback")
-  assessmentFeedbacksCreated  AssessmentFeedback[] @relation("CreatedAssessmentFeedback")
 }
 
 model IntelligenceView {
@@ -320,32 +313,6 @@ model IntelligenceView {
 
   @@unique([userId, companyId, viewDate])
   @@index([userId, viewDate])
-}
-
-// ============ ASSESSMENT FEEDBACK (Topin OA → student profile) ============
-
-model AssessmentFeedback {
-  id             String                   @id @default(cuid())
-  student        User                     @relation("StudentAssessmentFeedback", fields: [studentUserId], references: [id], onDelete: Cascade)
-  studentUserId  String
-  createdBy      User                     @relation("CreatedAssessmentFeedback", fields: [createdById], references: [id])
-  createdById    String
-  companySlug    String
-  companyName    String
-  role           String
-  reportUrl      String
-  reportNotes    String?
-  strengths      String?
-  weaknesses     String?
-  summary        String?
-  status         AssessmentFeedbackStatus @default(DRAFT)
-  sentAt         DateTime?
-  createdAt      DateTime                 @default(now())
-  updatedAt      DateTime                 @updatedAt
-
-  @@index([studentUserId, status])
-  @@index([status, createdAt])
-  @@index([createdById])
 }
 
 // ============ STUDENT-SUBMITTED EXPERIENCES ============

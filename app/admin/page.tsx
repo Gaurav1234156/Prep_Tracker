@@ -11,7 +11,6 @@ import {
   Flag,
   Upload,
   Download,
-  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,7 +37,6 @@ export default async function AdminPage() {
     subTopicCount,
     pendingImportsCount,
     hiringIntelJobCount,
-    assessmentDraftCount,
   ] = await Promise.all([
     prisma.interview.count(),
     prisma.topicArea.count(),
@@ -47,11 +45,6 @@ export default async function AdminPage() {
       where: { status: { in: ["READY_FOR_REVIEW", "FAILED"] } },
     }),
     prisma.job.count(),
-    // Keep the dashboard usable if the AssessmentFeedback migration
-    // has not been applied on this environment yet.
-    prisma.assessmentFeedback
-      .count({ where: { status: "DRAFT" } })
-      .catch(() => 0),
   ]);
 
   const tiles: Tile[] = [
@@ -70,17 +63,6 @@ export default async function AdminPage() {
       metric:
         pendingImportsCount > 0
           ? `${pendingImportsCount} pending review`
-          : undefined,
-    },
-    {
-      title: "Assessment Reports",
-      description:
-        "Upload Topin OA report URLs, generate AI feedback, and send to a student profile.",
-      href: "/admin/assessment-reports",
-      icon: ClipboardCheck,
-      metric:
-        assessmentDraftCount > 0
-          ? `${assessmentDraftCount} draft${assessmentDraftCount === 1 ? "" : "s"}`
           : undefined,
     },
     {
