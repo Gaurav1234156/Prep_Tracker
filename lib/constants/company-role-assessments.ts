@@ -5,7 +5,7 @@ export const COMPANY_ROLE_ASSESSMENTS: Record<
   "2care-ai": {
     // Matches Job.role in hiring intel for this company.
     "Full Stack Developer":
-      "https://assessment.topin.tech/assessment?org_id=ce4271da-e9ef-4ea9-8f50-e3229a71e29e&auto_redirect=1",
+      "https://topin-assessment-portal-beta.earlywave.in/assessment?org_id=db154bac-ef98-497b-9a9c-a3322ab86a80&auto_redirect=1",
   },
 };
 
