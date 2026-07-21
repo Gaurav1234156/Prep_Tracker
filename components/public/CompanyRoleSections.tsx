@@ -1,4 +1,5 @@
-import { Briefcase, ExternalLink } from "lucide-react";
+import { BarChart3, Briefcase, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { getRoleAssessmentUrl } from "@/lib/constants/company-role-assessments";
@@ -38,20 +39,31 @@ export function CompanyRoleSections({
             >
               <p className="text-sm font-medium text-foreground">{role}</p>
               {assessmentUrl ? (
-                <Button
-                  size="sm"
-                  className="gap-2 shrink-0"
-                  render={
-                    <a
-                      href={assessmentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    />
-                  }
-                >
-                  Take Assessment
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex flex-col gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    className="gap-2"
+                    render={
+                      <a
+                        href={assessmentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      />
+                    }
+                  >
+                    Take Assessment
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2"
+                    render={<Link href="/assessment-result" />}
+                  >
+                    Get Result
+                    <BarChart3 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               ) : null}
             </li>
           );
