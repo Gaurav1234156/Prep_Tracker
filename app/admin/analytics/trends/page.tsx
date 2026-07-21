@@ -1,14 +1,16 @@
 import React from "react";
 import Link from "next/link";
 import { getYearlyTopicAreaDistribution } from "@/lib/analytics/queries";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { ANALYTICS_TABS } from "../constants";
 import { ChartCard } from "@/components/charts/ChartCard";
 
-const TrendsChart = dynamic(
+const TrendsChart = nextDynamic(
   () => import("@/components/charts/TrendsChart").then((mod) => mod.TrendsChart),
   { loading: () => <div className="h-[360px] w-full animate-pulse bg-muted rounded-lg" /> }
 );
+
+export const dynamic = "force-dynamic";
 
 export default async function TrendsAnalyticsPage() {
   // Fetch trend data

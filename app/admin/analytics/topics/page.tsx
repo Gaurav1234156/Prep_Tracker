@@ -5,12 +5,12 @@ import {
   getSubTopicsForTopicArea,
   getCompaniesAskingSubTopic,
 } from "@/lib/analytics/queries";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { ANALYTICS_TABS } from "../constants";
 import { TopicFilters } from "@/components/charts/TopicFilters";
 import { ChartCard } from "@/components/charts/ChartCard";
 
-const HorizontalBarChart = dynamic(
+const HorizontalBarChart = nextDynamic(
   () => import("@/components/charts/HorizontalBarChart").then((mod) => mod.HorizontalBarChart),
   { loading: () => <div className="h-[280px] w-full animate-pulse bg-muted rounded-lg" /> }
 );
@@ -21,6 +21,8 @@ interface PageProps {
     subTopicId?: string;
   }>;
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function TopicsAnalyticsPage({ searchParams }: PageProps) {
   // Await searchParams in Next.js 15

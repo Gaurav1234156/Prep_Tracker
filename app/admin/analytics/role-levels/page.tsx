@@ -1,14 +1,16 @@
 import React from "react";
 import Link from "next/link";
 import { getRoleLevelTopicProfile } from "@/lib/analytics/queries";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { ANALYTICS_TABS } from "../constants";
 import { ChartCard } from "@/components/charts/ChartCard";
 
-const RoleLevelStackedChart = dynamic(
+const RoleLevelStackedChart = nextDynamic(
   () => import("@/components/charts/RoleLevelStackedChart").then((mod) => mod.RoleLevelStackedChart),
   { loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" /> }
 );
+
+export const dynamic = "force-dynamic";
 
 export default async function RoleLevelsAnalyticsPage() {
   // Fetch profiles

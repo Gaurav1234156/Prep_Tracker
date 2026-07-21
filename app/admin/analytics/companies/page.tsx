@@ -2,16 +2,16 @@ import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCoverageHeatmap, getCompanyTopicProfile } from "@/lib/analytics/queries";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { ANALYTICS_TABS } from "../constants";
 import { ChartCard } from "@/components/charts/ChartCard";
 
-const Heatmap = dynamic(
+const Heatmap = nextDynamic(
   () => import("@/components/charts/Heatmap").then((mod) => mod.Heatmap),
   { loading: () => <div className="h-[350px] w-full animate-pulse bg-muted rounded-lg" /> }
 );
 
-const CompanyComparisonChart = dynamic(
+const CompanyComparisonChart = nextDynamic(
   () => import("@/components/charts/CompanyComparisonChart").then((mod) => mod.CompanyComparisonChart),
   { loading: () => <div className="h-[400px] w-full animate-pulse bg-muted rounded-lg" /> }
 );
@@ -21,6 +21,8 @@ interface PageProps {
     companyIds?: string;
   }>;
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function CompaniesAnalyticsPage({ searchParams }: PageProps) {
   // Await Next.js 15 searchParams

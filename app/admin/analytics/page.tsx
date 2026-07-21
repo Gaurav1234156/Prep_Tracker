@@ -6,16 +6,16 @@ import {
   getSubmissionsOverTime,
   getTopCompaniesByInterviewCount,
 } from "@/lib/analytics/queries";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { KpiCard } from "@/components/charts/KpiCard";
 import { ChartCard } from "@/components/charts/ChartCard";
 
-const LineChart = dynamic(
+const LineChart = nextDynamic(
   () => import("@/components/charts/LineChart").then((mod) => mod.LineChart),
   { loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" /> }
 );
 
-const HorizontalBarChart = dynamic(
+const HorizontalBarChart = nextDynamic(
   () => import("@/components/charts/HorizontalBarChart").then((mod) => mod.HorizontalBarChart),
   { loading: () => <div className="h-[280px] w-full animate-pulse bg-muted rounded-lg" /> }
 );
@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { ANALYTICS_TABS } from "./constants";
 
+export const dynamic = "force-dynamic";
 
 export default async function AnalyticsOverviewPage() {
   // Fetch overview data in parallel
