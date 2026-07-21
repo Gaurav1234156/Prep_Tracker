@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   DAILY_LIMIT_REACHED_DESCRIPTION_COMPANY,
   DAILY_LIMIT_REACHED_TITLE,
+  formatDailyCompanyLimitUsage,
 } from "@/lib/intelligence/messages";
 import type { CompanyIntelligence } from "@/lib/queries/company-intelligence";
 import type { CompanyTabInterview } from "@/lib/queries/company-content";
@@ -180,9 +181,9 @@ export function CompanyContentGate({
 
   return (
     <div className="space-y-8">
-      {state.remaining != null && state.remaining > 0 ? (
-        <p className="text-xs text-muted-foreground">
-          {state.remaining} of 2 companies remaining today
+      {state.remaining != null ? (
+        <p className="text-sm font-semibold text-foreground">
+          {formatDailyCompanyLimitUsage(state.remaining)}
         </p>
       ) : null}
 

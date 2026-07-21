@@ -160,7 +160,9 @@ async function CompaniesListContainer({
 
   return (
     <div className="space-y-10">
-      {summaryLines.length > 0 && <RoleFilterSummary lines={summaryLines} />}
+      {intelligence && intelligence.interviewCount > 0 && (
+        <RoleFilterSummary intelligence={intelligence} lines={summaryLines} />
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {companies.map((company) => (
           <div key={company.id} className="h-full animate-in fade-in slide-in-from-bottom-2 duration-300">

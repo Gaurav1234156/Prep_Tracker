@@ -77,10 +77,10 @@ export function RoundSection({ round }: { round: Round }) {
 
           <div className="flex-shrink-0 self-start lg:self-center">
             <span className={cn(
-              "px-3 py-1 rounded-[6px] text-[11px] font-extrabold uppercase tracking-wider border",
+              "px-3 py-1 rounded-[6px] text-[11px] font-extrabold tracking-wider border",
               outcomeColors[outcome] || "bg-secondary text-muted-foreground border-border"
             )}>
-              {outcome}
+              Result: <span className="uppercase">{outcome}</span>
             </span>
           </div>
         </div>

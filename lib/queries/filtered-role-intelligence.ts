@@ -6,13 +6,21 @@ import {
 } from "@/lib/constants/ctc-ranges";
 import { inferRoleLevel } from "@/lib/imports/intelligence-mapping";
 
+export type TopicDistributionItem = { name: string; count: number };
+export type RoundTypeDistributionItem = { type: string; count: number };
+
 export type FilteredRoleIntelligence = {
   roleNames: string[];
   ctcLabel: string | null;
   topTopics: string[];
+  topicDistribution: TopicDistributionItem[];
   topTechStacks: string[];
   avgCgpa: number | null;
   topRoundTypes: string[];
+  roundTypeDistribution: RoundTypeDistributionItem[];
+  difficultyBreakdown: { easy: number; medium: number; hard: number };
+  avgRoundCount: number | null;
+  companyCount: number;
   interviewCount: number;
 };
 
@@ -157,6 +165,8 @@ async function fetchFilteredRoleIntelligence({
     roundGroups,
     cgpaAgg,
     matchingInterviews,
+    roundCount,
+    difficultyEntries,
   ] = await Promise.all([
     prisma.roleLevel.findMany({
       where: { id: { in: roleLevelIds } },
@@ -176,7 +186,7 @@ async function fetchFilteredRoleIntelligence({
       where: { interview: interviewWhere },
       _count: { roundType: true },
       orderBy: { _count: { roundType: "desc" } },
-      take: 3,
+      take: 5,
     }),
     prisma.interview.aggregate({
       where: { ...interviewWhere, candidateCgpa: { not: null } },
@@ -187,6 +197,14 @@ async function fetchFilteredRoleIntelligence({
       where: interviewWhere,
       select: { companyId: true },
       distinct: ["companyId"],
+    }),
+    prisma.round.count({ where: { interview: interviewWhere } }),
+    prisma.subTopicEntry.findMany({
+      where: {
+        difficulty: { not: null },
+        topicCoverage: { round: { interview: interviewWhere } },
+      },
+      select: { difficulty: true },
     }),
   ]);
 
@@ -199,9 +217,14 @@ async function fetchFilteredRoleIntelligence({
         })
       : [];
   const topicNameById = new Map(topicAreas.map((ta) => [ta.id, ta.name]));
-  const topTopics = topicGroups
-    .map((g) => topicNameById.get(g.topicAreaId))
-    .filter((name): name is string => Boolean(name));
+  const topicDistribution: TopicDistributionItem[] = topicGroups
+    .map((g) => {
+      const name = topicNameById.get(g.topicAreaId);
+      if (!name) return null;
+      return { name, count: g._count.id };
+    })
+    .filter((item): item is TopicDistributionItem => item != null);
+  const topTopics = topicDistribution.map((t) => t.name);
 
   const roleNames = roleLevels.map((rl) => rl.name);
   const roleNameSet = new Set(roleNames);
@@ -248,13 +271,38 @@ async function fetchFilteredRoleIntelligence({
       ? cgpaAgg._avg.candidateCgpa
       : null;
 
+  const roundTypeDistribution: RoundTypeDistributionItem[] = roundGroups.map(
+    (g) => ({
+      type: g.roundType,
+      count: g._count.roundType,
+    }),
+  );
+  const topRoundTypes = roundTypeDistribution.map((r) => r.type);
+
+  const difficultyBreakdown = { easy: 0, medium: 0, hard: 0 };
+  for (const entry of difficultyEntries) {
+    if (entry.difficulty === "EASY") difficultyBreakdown.easy += 1;
+    if (entry.difficulty === "MEDIUM") difficultyBreakdown.medium += 1;
+    if (entry.difficulty === "HARD") difficultyBreakdown.hard += 1;
+  }
+
+  const avgRoundCount =
+    interviewCount >= 3 && roundCount > 0
+      ? Math.round((roundCount / interviewCount) * 10) / 10
+      : null;
+
   return {
     roleNames,
     ctcLabel: getCtcLabel(ctcMin, ctcMax),
     topTopics,
+    topicDistribution,
     topTechStacks,
     avgCgpa,
-    topRoundTypes: roundGroups.map((g) => g.roundType),
+    topRoundTypes,
+    roundTypeDistribution,
+    difficultyBreakdown,
+    avgRoundCount,
+    companyCount: companyIds.length,
     interviewCount,
   };
 }
@@ -267,7 +315,7 @@ export async function getFilteredRoleIntelligence(
 
   const sortedIds = [...roleLevelIds].sort().join(",");
   const cacheKey = [
-    "filtered-role-intelligence",
+    "filtered-role-intelligence-v2",
     sortedIds,
     String(ctcMin ?? ""),
     String(ctcMax ?? ""),

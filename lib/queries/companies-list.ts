@@ -66,22 +66,7 @@ export async function getCompaniesList({
     if (cgpaMax != null) interviewFilters.candidateCgpa.lte = cgpaMax;
   }
 
-  const hasRoleLevelFilter = Boolean(roleLevels && roleLevels.length > 0);
-  const hasCandidateFilters =
-    (branches && branches.length > 0) ||
-    cgpaMin != null ||
-    cgpaMax != null;
-
-  if (hasCandidateFilters) {
-    baseFilters.push({ interviews: { some: interviewFilters } });
-  } else if (hasRoleLevelFilter) {
-    baseFilters.push({
-      OR: [
-        { interviews: { some: interviewFilters } },
-        { jobs: { some: {} } },
-      ],
-    });
-  } else if (Object.keys(interviewFilters).length > 0) {
+  if (Object.keys(interviewFilters).length > 0) {
     baseFilters.push({ interviews: { some: interviewFilters } });
   } else {
     baseFilters.push({

@@ -166,7 +166,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
               <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-800/60 px-3 py-1.5 text-slate-300 ring-1 ring-slate-500/25">
                 <Compass className="h-4 w-4" />
                 {uniqueLevels.length}{" "}
-                {uniqueLevels.length === 1 ? "level" : "levels"}
+                {uniqueLevels.length === 1 ? "role level" : "role levels"}
               </span>
               {company.ctcMin != null || company.ctcMax != null ? (
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/20 px-3 py-1.5 text-emerald-200 ring-1 ring-emerald-500/30 font-semibold">

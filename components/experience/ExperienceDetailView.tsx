@@ -9,6 +9,7 @@ import { RecentlyViewedTracker } from "@/components/experience/RecentlyViewedTra
 import { RelatedExperiences } from "@/components/experience/RelatedExperiences";
 import { RoundSection } from "@/components/experience/RoundSection";
 import { TopicCloud } from "@/components/experience/TopicCloud";
+import { formatDailyCompanyLimitUsage } from "@/lib/intelligence/messages";
 import type { InterviewDetail } from "@/lib/queries/interview-detail";
 
 const TopicAreaDistribution = dynamic(
@@ -41,17 +42,17 @@ export function ExperienceDetailView({
   return (
     <article className="min-h-screen bg-background pb-20 font-sans antialiased text-foreground selection:bg-primary/10 selection:text-primary">
       <RecentlyViewedTracker interviewId={interview.id} />
-      {remaining != null && remaining > 0 ? (
-        <p className="container mx-auto max-w-6xl px-4 pt-6 text-xs text-muted-foreground">
-          {remaining} of 2 companies remaining today
-        </p>
-      ) : null}
       <ExperienceHero
         interview={interview}
         bookmarked={bookmarked}
         isAuthenticated
         showBookmark={showBookmark}
       />
+      {remaining != null ? (
+        <p className="container mx-auto max-w-6xl px-4 pt-6 text-sm font-semibold text-foreground">
+          {formatDailyCompanyLimitUsage(remaining)}
+        </p>
+      ) : null}
       <div className="container mx-auto max-w-6xl px-4 py-8 space-y-10">
         <ProcessStepper rounds={interview.rounds} />
 
