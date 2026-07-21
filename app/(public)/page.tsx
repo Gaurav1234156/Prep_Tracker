@@ -9,7 +9,7 @@ import { RecentExperiencesRow } from "@/components/public/RecentExperiencesRow";
 import { TopicAreaHighlights } from "@/components/public/TopicAreaHighlights";
 import { CardGridSkeleton } from "@/components/loading/Skeletons";
 
-export const revalidate = 3600; // ISR: Cache for 1 hour
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "PrepIntel — Real Interview Experiences & Structured Taxonomy",

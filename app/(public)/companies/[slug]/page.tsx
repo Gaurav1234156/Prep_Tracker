@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { CompanyLogo } from "@/components/common/CompanyLogo";
 import { CompanyContentGate } from "@/components/public/CompanyContentGate";
 
-export const revalidate = 3600; // ISR cache for 1 hour
+export const dynamic = "force-dynamic";
 
 // Dynamic metadata generation for top-tier SEO indexability
 export async function generateMetadata({

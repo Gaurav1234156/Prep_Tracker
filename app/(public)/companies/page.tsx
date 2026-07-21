@@ -16,7 +16,7 @@ import { Suspense } from "react";
 import { getCurrentDbUser } from "@/lib/auth/guards";
 import { UserRole } from "@prisma/client";
 
-export const revalidate = 3600; // ISR cache for 1 hour
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Browse Companies — Interview Experiences",
