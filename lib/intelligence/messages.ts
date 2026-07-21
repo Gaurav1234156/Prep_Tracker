@@ -1,7 +1,7 @@
 import { DAILY_COMPANY_LIMIT } from "@/lib/intelligence/access";
 
 export const DAILY_LIMIT_REACHED_TITLE =
-  "You've already viewed 2 companies today";
+  `You've already viewed ${DAILY_COMPANY_LIMIT} companies today`;
 
 export const DAILY_LIMIT_RESET_DESCRIPTION =
   "Your daily limit resets at 12 midnight IST.";

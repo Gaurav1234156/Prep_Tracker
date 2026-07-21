@@ -2,7 +2,7 @@ import { Prisma, UserRole } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 
-export const DAILY_COMPANY_LIMIT = 2;
+export const DAILY_COMPANY_LIMIT = 3;
 /** @deprecated Use DAILY_COMPANY_LIMIT */
 export const DAILY_INTELLIGENCE_LIMIT = DAILY_COMPANY_LIMIT;
 
