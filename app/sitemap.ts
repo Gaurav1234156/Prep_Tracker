@@ -1,35 +1,8 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 
-// Avoid querying the DB during `next build` (Vercel → Supabase pooler often
-// returns P1001 from the build region). Generate on request instead.
-export const dynamic = "force-dynamic";
-
-function siteBaseUrl() {
-  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
-}
-
-function staticEntries(baseUrl: string): MetadataRoute.Sitemap {
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/companies`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-  ];
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = siteBaseUrl();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   try {
     const [companies, interviews, subTopics] = await Promise.all([
@@ -60,13 +33,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     return [
-      ...staticEntries(baseUrl),
+      {
+        url: baseUrl,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 1.0,
+      },
+      {
+        url: `${baseUrl}/companies`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 0.9,
+      },
       ...companyUrls,
       ...interviewUrls,
       ...subTopicUrls,
     ];
   } catch (error) {
     console.error("Sitemap generation error:", error);
-    return staticEntries(baseUrl);
+    return [
+      {
+        url: baseUrl,
+        lastModified: new Date(),
+        priority: 1.0,
+      },
+    ];
   }
 }

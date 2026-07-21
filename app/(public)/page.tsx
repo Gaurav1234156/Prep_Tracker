@@ -9,9 +9,7 @@ import { RecentExperiencesRow } from "@/components/public/RecentExperiencesRow";
 import { TopicAreaHighlights } from "@/components/public/TopicAreaHighlights";
 import { CardGridSkeleton } from "@/components/loading/Skeletons";
 
-// Rendered dynamically per request so the build never has to reach the database
-// at prerender time (the counts + rows below query Prisma while rendering).
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR: Cache for 1 hour
 
 export const metadata: Metadata = {
   title: "PrepIntel — Real Interview Experiences & Structured Taxonomy",

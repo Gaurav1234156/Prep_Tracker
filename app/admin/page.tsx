@@ -10,7 +10,6 @@ import {
   BarChart3,
   Flag,
   Upload,
-  Download,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,21 +30,15 @@ type Tile = {
 export default async function AdminPage() {
   const user = await requireAdminOrPanelist();
 
-  const [
-    interviewCount,
-    topicAreaCount,
-    subTopicCount,
-    pendingImportsCount,
-    hiringIntelJobCount,
-  ] = await Promise.all([
-    prisma.interview.count(),
-    prisma.topicArea.count(),
-    prisma.subTopic.count(),
-    prisma.importRow.count({
-      where: { status: { in: ["READY_FOR_REVIEW", "FAILED"] } },
-    }),
-    prisma.job.count(),
-  ]);
+  const [interviewCount, topicAreaCount, subTopicCount, pendingImportsCount] =
+    await Promise.all([
+      prisma.interview.count(),
+      prisma.topicArea.count(),
+      prisma.subTopic.count(),
+      prisma.importRow.count({
+        where: { status: { in: ["READY_FOR_REVIEW", "FAILED"] } },
+      }),
+    ]);
 
   const tiles: Tile[] = [
     {
@@ -64,14 +57,6 @@ export default async function AdminPage() {
         pendingImportsCount > 0
           ? `${pendingImportsCount} pending review`
           : undefined,
-    },
-    {
-      title: "Export Hiring Intel",
-      description:
-        "Download all company job and role hiring data as a CSV file.",
-      href: "/admin/hiring-intel",
-      icon: Download,
-      metric: `${hiringIntelJobCount} jobs`,
     },
     {
       title: "Analytics Hub",

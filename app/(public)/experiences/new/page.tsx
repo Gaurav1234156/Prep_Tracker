@@ -5,9 +5,6 @@ import { requireUser } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db";
 import { SubmitExperienceForm } from "@/components/public/SubmitExperienceForm";
 
-// Signed-in only + queries Prisma while rendering, so never prerender at build.
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Share your interview experience — PrepIntel",
   description:

@@ -4,7 +4,7 @@ import { BookOpen, ChevronRight } from "lucide-react";
 
 import { getTopicAreasIndex } from "@/lib/queries/topic-area-detail";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Browse Topic Areas — Interview Questions by Topic",

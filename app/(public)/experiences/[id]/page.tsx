@@ -3,7 +3,7 @@ import { GatedExperienceContent } from "@/components/experience/GatedExperienceC
 import { prisma } from "@/lib/db";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR: re-render at most once per hour
 
 export async function generateMetadata({
   params,
