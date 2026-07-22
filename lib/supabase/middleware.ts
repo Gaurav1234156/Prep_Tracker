@@ -1,12 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-/** Paths reachable without a Supabase session. */
+import { SSO_SESSION_COOKIE, verifySessionToken } from "@/lib/auth/sso";
+
+/** Paths reachable without a session (Supabase or SSO). */
 function isAnonymousAllowedPath(path: string): boolean {
   return (
     path === "/login" ||
     path === "/signup" ||
-    path.startsWith("/auth/")
+    path === "/admin/login" ||
+    path === "/admin/signup" ||
+    path.startsWith("/auth/") ||
+    path.startsWith("/sso/") ||
+    path.startsWith("/api/sso/")
   );
 }
 
@@ -42,8 +48,18 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
+  // CCBP SSO students have no Supabase session; accept our signed session
+  // cookie as authentication instead.
+  let hasSsoSession = false;
+  if (!user) {
+    const ssoToken = request.cookies.get(SSO_SESSION_COOKIE)?.value;
+    if (ssoToken) {
+      hasSsoSession = (await verifySessionToken(ssoToken)) !== null;
+    }
+  }
+
   // Anonymous users may only reach auth routes; everything else requires sign-in.
-  if (!user && !isAnonymousAllowedPath(path)) {
+  if (!user && !hasSsoSession && !isAnonymousAllowedPath(path)) {
     if (path.startsWith("/api/")) {
       return NextResponse.json(
         { error: "sign_in_required" },

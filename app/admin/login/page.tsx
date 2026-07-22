@@ -2,13 +2,13 @@ import { redirect } from "next/navigation";
 
 import { getCurrentDbUser } from "@/lib/auth/guards";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
-import { LoginForm } from "./login-form";
+import { AdminLoginForm } from "./login-form";
 
 export const metadata = {
-  title: "Login | Interview Experience Platform",
+  title: "Staff login | Interview Experience Platform",
 };
 
-export default async function LoginPage({
+export default async function AdminLoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string; error?: string }>;
@@ -18,8 +18,13 @@ export default async function LoginPage({
   const user = await getCurrentDbUser();
   if (user) {
     if (!user.onboardedAt) redirect("/onboarding");
-    redirect(safeNextPath(params.next));
+    redirect(safeNextPath(params.next, "/admin"));
   }
 
-  return <LoginForm authError={params.error ?? null} />;
+  return (
+    <AdminLoginForm
+      next={params.next ?? null}
+      authError={params.error ?? null}
+    />
+  );
 }

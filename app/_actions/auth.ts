@@ -7,6 +7,7 @@ import { z } from "zod";
 import { ensureDbUser } from "@/lib/auth/ensure-db-user";
 import { requireUser } from "@/lib/auth/guards";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
+import { clearSsoSessionCookie } from "@/lib/auth/sso-session";
 import { prisma } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 
@@ -57,6 +58,7 @@ export async function updateProfile(input: ProfileUpdateInput) {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  await clearSsoSessionCookie();
   redirect("/");
 }
 

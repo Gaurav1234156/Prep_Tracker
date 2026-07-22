@@ -21,6 +21,25 @@ function extractAuthProfile(authUser: SupabaseUser) {
   return { name, avatarUrl };
 }
 
+/**
+ * Ensure a Prisma User row exists for a CCBP SSO user, keyed by their unique
+ * CCBP userId. Students authenticated via SSO have no email/password, so we
+ * store a synthetic email to satisfy the required+unique `email` column while
+ * `ssoUserId` remains the authoritative identifier.
+ */
+export async function ensureSsoUser(ccbpUserId: string): Promise<User> {
+  const syntheticEmail = `${ccbpUserId}@ccbp-sso.local`;
+  return prisma.user.upsert({
+    where: { ssoUserId: ccbpUserId },
+    update: {},
+    create: {
+      ssoUserId: ccbpUserId,
+      email: syntheticEmail,
+      role: "STUDENT",
+    },
+  });
+}
+
 /** Ensure a Prisma User row exists for the authenticated Supabase user. */
 export async function ensureDbUser(authUser: SupabaseUser): Promise<User> {
   const existing = await prisma.user.findUnique({

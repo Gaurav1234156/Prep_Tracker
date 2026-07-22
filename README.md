@@ -60,6 +60,37 @@ All five are required. The `.env.example` file contains commented placeholders.
 
 `.env.local` and `.env` are both gitignored — never commit real values.
 
+## CCBP SSO login
+
+Students sign in exclusively through **CCBP account SSO**; email/password and Google
+are reserved for staff (admins/panelists) at `/admin/login`. Our app plays the
+"third-party app / Client Backend" role from the CCBP Forms/Accounts integration.
+
+**Additional env vars** (see `.env`):
+
+| Variable                    | Notes                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| `SSO_TOKEN_SECRET`          | Server-only. HMAC secret (≥ 32 chars) signing the `auth_token` and the app session cookie. |
+| `SSO_CLIENT_API_KEY`        | Server-only. Expected `x-api-key` on `POST /api/sso/issue-token`.                          |
+| `NEXT_PUBLIC_SSO_LOGIN_URL` | Public. The Forms entry link `https://forms.ccbp.in/mid/{LINK_ID}` for the login button.   |
+
+**Register with the CCBP Forms team:** a Link ID, our **Redirection URL** (`/sso/callback`),
+our **Client Backend URL** (`/api/sso/issue-token`), and the shared API key.
+
+**Flow:**
+
+1. Student clicks "Login with CCBP account" on `/login` → navigates to `NEXT_PUBLIC_SSO_LOGIN_URL`.
+2. Student authenticates on the CCBP Accounts page.
+3. Forms backend calls `POST /api/sso/issue-token` with `{ "user_id": "..." }` + `x-api-key`; we return `{ "auth_token": "..." }` (a short-lived signed JWT of the CCBP userId).
+4. Forms redirects the student to `/sso/callback?auth_token=...`.
+5. `/sso/callback` verifies the token, upserts the Prisma `User` by `ssoUserId` (synthetic email, `role STUDENT`), sets our `sso_session` cookie, and redirects to `/onboarding` (new) or `/dashboard`.
+
+`getCurrentDbUser()` accepts either a Supabase session (staff) or the `sso_session`
+cookie (students); middleware treats both as authenticated. The `ssoUserId` column
+was added additively (`prisma/adhoc-add-sso-user-id.sql`) rather than via
+`prisma migrate dev`, because the live DB carries out-of-band drift and a normal
+migrate would require a destructive reset.
+
 ## Database & Storage
 
 The full schema is defined in [`prisma/schema.prisma`](prisma/schema.prisma): three core entities (`Interview → Round → Question`), a controlled-vocabulary `Topic` table joined to questions via `QuestionTopic`, `Company`, `Asset`, `User`, `Bookmark`, `FeatureFlag`, and all related enums.

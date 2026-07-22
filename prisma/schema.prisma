@@ -286,6 +286,7 @@ model Asset {
 model User {
   id           String        @id @default(cuid())
   email        String        @unique
+  ssoUserId    String?       @unique
   name         String?
   role         UserRole      @default(STUDENT)
   branch       Branch?

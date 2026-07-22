@@ -48,13 +48,13 @@ export function SiteFooter() {
             <h5 className="text-xs font-bold text-white uppercase tracking-wider">Resources</h5>
             <ul className="space-y-2 text-xs font-semibold">
               <li>
-                <Link href="/login" className="hover:text-white transition-colors">
+                <Link href="/admin/login" className="hover:text-white transition-colors">
                   Panelist Login
                 </Link>
               </li>
               <li>
-                <Link href="/signup" className="hover:text-white transition-colors">
-                  Register as Student
+                <Link href="/login" className="hover:text-white transition-colors">
+                  Student Login
                 </Link>
               </li>
             </ul>

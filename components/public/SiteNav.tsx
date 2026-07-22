@@ -86,15 +86,8 @@ export async function SiteNav() {
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    render={<Link href="/login" />}
-                  >
+                  <Button size="sm" render={<Link href="/login" />}>
                     Sign in
-                  </Button>
-                  <Button size="sm" render={<Link href="/signup" />}>
-                    Sign up
                   </Button>
                 </div>
               )}

@@ -11,7 +11,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentDbUser();
-  if (!user) redirect("/login?next=/admin");
+  if (!user) redirect("/admin/login?next=/admin");
   if (user.role !== "ADMIN" && user.role !== "PANELIST") {
     // Students don't see the admin area.
     redirect("/dashboard");

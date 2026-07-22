@@ -38,11 +38,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-type Props = {
-  next: string | null;
-};
-
-export function SignupForm({ next }: Props) {
+export function AdminSignupForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
@@ -78,7 +74,7 @@ export function SignupForm({ next }: Props) {
 
       if (!data.session) {
         toast.success("Account created. Check your email to confirm, then log in.");
-        router.replace("/login");
+        router.replace("/admin/login");
         return;
       }
 
@@ -94,8 +90,7 @@ export function SignupForm({ next }: Props) {
     setOauthLoading(true);
     try {
       const supabase = createClient();
-      const destination = next ?? "/dashboard";
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination)}`;
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent("/admin")}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },
@@ -112,9 +107,9 @@ export function SignupForm({ next }: Props) {
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Create an account</CardTitle>
+          <CardTitle>Create a staff account</CardTitle>
           <CardDescription>
-            Sign up with email or Google. You can update your profile later.
+            For admins and panelists. Sign up with email or Google.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -216,10 +211,7 @@ export function SignupForm({ next }: Props) {
         <CardFooter>
           <p className="text-muted-foreground text-sm">
             Already have an account?{" "}
-            <Link
-              href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
-              className="text-foreground underline"
-            >
+            <Link href="/admin/login" className="text-foreground underline">
               Log in
             </Link>
           </p>

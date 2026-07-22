@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { User, UserRole } from "@prisma/client";
 
 import { ensureDbUser } from "@/lib/auth/ensure-db-user";
+import { getSsoUserIdFromCookie } from "@/lib/auth/sso-session";
 import { prisma } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,7 +31,13 @@ export const getCurrentDbUser = cache(
       data: { user: authUser },
     } = await supabase.auth.getUser();
 
-    if (!authUser?.email) return null;
+    // CCBP SSO students have no Supabase session — fall back to our own
+    // signed session cookie, which carries the Prisma User id directly.
+    if (!authUser?.email) {
+      const ssoUserId = await getSsoUserIdFromCookie();
+      if (!ssoUserId) return null;
+      return prisma.user.findUnique({ where: { id: ssoUserId } });
+    }
 
     const existing = await prisma.user.findUnique({
       where: { email: authUser.email },
